@@ -1,5 +1,6 @@
 import json
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -45,6 +46,9 @@ def test_upstream_identity_and_fork_contracts():
 
 def test_only_current_node_ids_are_registered():
     expected = {
+        "ImageReferenceManager",
+        "ImageReferenceManagerUpload",
+        "ReferenceSpitter",
         "OmnicharImagesReferencesManager",
         "OmnicharLocalInputImagesReferencesManager",
         "QwenImageReferencePack",
@@ -54,3 +58,30 @@ def test_only_current_node_ids_are_registered():
     }
     assert set(nodes.NODE_CLASS_MAPPINGS) == expected
     assert set(nodes.NODE_DISPLAY_NAME_MAPPINGS) == expected
+
+
+@pytest.mark.parametrize("count", [0, 1, 10])
+@pytest.mark.parametrize("node_class", [nodes.ImageReferenceManager, nodes.ImageReferenceManagerUpload])
+def test_reference_bundle_round_trip(count, node_class, tmp_path, monkeypatch):
+    monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
+    images = [object() for _ in range(count)]
+    for i in range(count):
+        (tmp_path / f"{i}.png").touch()
+    calls = []
+
+    def load_image(path, **kwargs):
+        calls.append(kwargs)
+        return images[int(Path(path).stem)]
+
+    monkeypatch.setattr(nodes.media, "load_image", load_image)
+    payload = json.dumps([{"file": f"{i}.png", "rotation": 90, "mirror": True} for i in range(count)])
+    manager = node_class()
+    splitter = nodes.ReferenceSpitter()
+    assert manager.RETURN_TYPES == splitter.INPUT_TYPES()["required"]["references"]
+    result = manager.build(payload, max_reference_edge=512)
+    assert len(result) == 1
+    outputs = splitter.split(result[0])
+    assert all(outputs[i] is images[i] for i in range(count))
+    assert outputs[count:] == (None,) * (10 - count)
+    assert all(call["max_edge"] == 512 and call["rotation"] == 90 and call["mirror"] for call in calls)
+    assert manager.IS_CHANGED(payload, 512) != manager.IS_CHANGED(payload, 1024)

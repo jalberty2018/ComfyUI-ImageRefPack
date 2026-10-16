@@ -164,7 +164,44 @@ class QwenImageLocalInput10ReferencePack(QwenImageReferencePack):
     """Fork-specific ten-image manager using ComfyUI/input."""
 
 
+class ImageReferenceManager(QwenImageLocalInput10ReferencePack):
+    """Carry ten independently sized images over a single connection."""
+
+    RETURN_TYPES = ("QWEN_IMAGE_REFERENCES",)
+    RETURN_NAMES = ("references",)
+    DESCRIPTION = "Manage up to ten local input images and bundle them for Reference spitter."
+
+    def build(self, references_json="", max_reference_edge=DEFAULT_MAX_REFERENCE_EDGE, **kwargs):
+        return (super().build(references_json, max_reference_edge, **kwargs),)
+
+
+class ImageReferenceManagerUpload(ImageReferenceManager):
+    """Upload variant of the single-output reference manager."""
+
+    DESCRIPTION = "Upload up to ten images and bundle them for Reference spitter."
+
+
+class ReferenceSpitter:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"references": ("QWEN_IMAGE_REFERENCES",)}}
+
+    RETURN_TYPES = ("IMAGE",) * 10
+    RETURN_NAMES = tuple(f"image_{i}" for i in range(1, 11))
+    FUNCTION = "split"
+    CATEGORY = "Qwen Image"
+    DESCRIPTION = "Split Image reference manager's bundle into ten images. Empty slots return None."
+
+    def split(self, references):
+        if not isinstance(references, (tuple, list)) or len(references) != 10:
+            raise ValueError("Expected ten image slots from Image reference manager")
+        return tuple(references)
+
+
 NODE_CLASS_MAPPINGS = {
+    "ImageReferenceManagerUpload": ImageReferenceManagerUpload,
+    "ImageReferenceManager": ImageReferenceManager,
+    "ReferenceSpitter": ReferenceSpitter,
     "OmnicharLocalInputImagesReferencesManager": OmnicharLocalInputImagesReferencesManager,
     "OmnicharImagesReferencesManager": OmnicharImagesReferencesManager,
     "QwenImageReferencePack": QwenImageReferencePack,
@@ -173,6 +210,9 @@ NODE_CLASS_MAPPINGS = {
     "QwenImageLocalInput10ReferencePack": QwenImageLocalInput10ReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "ImageReferenceManagerUpload": "Image reference manager (Upload)",
+    "ImageReferenceManager": "Image reference manager",
+    "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
     "OmnicharImagesReferencesManager": "Omnichar Images References Manager",
     "QwenImageReferencePack": "Qwen Image References Manager",

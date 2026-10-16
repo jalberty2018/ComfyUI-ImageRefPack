@@ -8,6 +8,9 @@ downscaling. The original upstream node retains its name, ID, inputs and ten
 
 | Display name | Node ID | Outputs | Source |
 | --- | --- | --- | --- |
+| Image reference manager | `ImageReferenceManager` | `references` | Local input |
+| Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references` | Upload |
+| Reference spitter | `ReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | Qwen Image References Manager | `QwenImageReferencePack` | `image_1` through `image_10` | Upload |
 | Qwen Image References Manager (Upload, First/Last) | `QwenImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
 | Qwen Image References Manager (Local Input, First/Last) | `QwenImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
@@ -35,6 +38,15 @@ browse the ComfyUI server's local `input` directory (including subfolders) in a
 Local Input node. Local selection supports filename filtering and needs no upload.
 Images fill the grid in output order: 5 x 2 for ten images, 2 x 1 for first/last.
 Empty outputs return `None`.
+
+Connect **Image reference manager** → `references` → **Reference spitter** to
+carry all ten image slots over one connection. The manager uses the local input
+picker and the same editing and downscaling controls as the ten-image manager.
+The splitter preserves image order, individual dimensions and empty slots.
+The bundle uses the custom `QWEN_IMAGE_REFERENCES` type for these two nodes.
+Use **Image reference manager (Upload)** to upload images instead of selecting
+local input files. It has the same single `references` output and connects to
+the same **Reference spitter**, with editing and downscaling preserved.
 
 On the Qwen managers, double-click a tile or use its edit control to crop, rotate or mirror it.
 Those managers share the Crop presets: **Free**, **1:1 (Square)**,
