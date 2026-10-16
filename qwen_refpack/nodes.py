@@ -211,7 +211,7 @@ NODE_CLASS_MAPPINGS = {
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "ImageReferenceManagerUpload": "Image reference manager (Upload)",
-    "ImageReferenceManager": "Image reference manager",
+    "ImageReferenceManager": "Image reference manager (Local)",
     "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
     "OmnicharImagesReferencesManager": "Omnichar Images References Manager",

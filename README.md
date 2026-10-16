@@ -8,7 +8,7 @@ downscaling. The original upstream node retains its name, ID, inputs and ten
 
 | Display name | Node ID | Outputs | Source |
 | --- | --- | --- | --- |
-| Image reference manager | `ImageReferenceManager` | `references` | Local input |
+| Image reference manager (Local) | `ImageReferenceManager` | `references` | Local input |
 | Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references` | Upload |
 | Reference spitter | `ReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | Qwen Image References Manager | `QwenImageReferencePack` | `image_1` through `image_10` | Upload |
@@ -39,7 +39,7 @@ Local Input node. Local selection supports filename filtering and needs no uploa
 Images fill the grid in output order: 5 x 2 for ten images, 2 x 1 for first/last.
 Empty outputs return `None`.
 
-Connect **Image reference manager** → `references` → **Reference spitter** to
+Connect **Image reference manager (Local)** → `references` → **Reference spitter** to
 carry all ten image slots over one connection. The manager uses the local input
 picker and the same editing and downscaling controls as the ten-image manager.
 The splitter preserves image order, individual dimensions and empty slots.
