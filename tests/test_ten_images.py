@@ -28,14 +28,14 @@ def test_shared_image_loader_order_and_empty_slots(tmp_path, monkeypatch):
     with pytest.raises(ReferenceError, match="at most 10"):
         node.build(json.dumps(refs + refs[:1]))
     with pytest.raises(ReferenceError, match="at most 2"):
-        nodes.QwenImageUploadFirstLastReferencePack().build(json.dumps(refs))
+        nodes.ImageUploadFirstLastReferencePack().build(json.dumps(refs))
 
 
 def test_manager_and_first_last_contracts():
     manager = nodes.NODE_CLASS_MAPPINGS["ImageReferenceManager"]
     assert manager.RETURN_NAMES == ("references", "masks")
     assert list(manager.INPUT_TYPES()["optional"]) == ["references_json", "max_reference_edge"]
-    for name in ("QwenImageUploadFirstLastReferencePack", "QwenImageLocalInputFirstLastReferencePack"):
+    for name in ("ImageUploadFirstLastReferencePack", "ImageLocalInputFirstLastReferencePack"):
         variant = nodes.NODE_CLASS_MAPPINGS[name]
         assert variant.RETURN_NAMES == ("First image", "Last image", "first_width", "first_height", "last_width", "last_height")
         assert variant.MAX_IMAGES == 2
@@ -50,8 +50,8 @@ def test_only_current_node_ids_are_registered():
         "MaskSplitter",
         "OmnicharImagesReferencesManager",
         "OmnicharLocalInputImagesReferencesManager",
-        "QwenImageUploadFirstLastReferencePack",
-        "QwenImageLocalInputFirstLastReferencePack",
+        "ImageUploadFirstLastReferencePack",
+        "ImageLocalInputFirstLastReferencePack",
     }
     assert set(nodes.NODE_CLASS_MAPPINGS) == expected
     assert set(nodes.NODE_DISPLAY_NAME_MAPPINGS) == expected

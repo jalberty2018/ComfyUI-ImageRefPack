@@ -106,8 +106,8 @@ export function referenceImageUrl(file) {
 }
 
 function registerReferenceManager(tenImages = false) {
-const NODE_NAME = tenImages ? "ImageReferenceManagerUpload" : "QwenImageUploadFirstLastReferencePack";
-const LOCAL_NODE_NAME = tenImages ? "ImageReferenceManager" : "QwenImageLocalInputFirstLastReferencePack";
+const NODE_NAME = tenImages ? "ImageReferenceManagerUpload" : "ImageUploadFirstLastReferencePack";
+const LOCAL_NODE_NAME = tenImages ? "ImageReferenceManager" : "ImageLocalInputFirstLastReferencePack";
 
 if (!tenImages) editImageReference = (reference, onSave) => {
     injectStyles();

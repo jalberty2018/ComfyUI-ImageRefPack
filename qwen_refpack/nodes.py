@@ -111,7 +111,7 @@ class OmnicharLocalInputImagesReferencesManager(OmnicharImagesReferencesManager)
     DESCRIPTION = "Choose nine face, body and clothes references from ComfyUI/input, including subfolders."
 
 
-class QwenImageUploadFirstLastReferencePack(QwenImageReferencePack):
+class ImageUploadFirstLastReferencePack(QwenImageReferencePack):
     """Fork-specific first/last-frame upload manager."""
 
     MAX_IMAGES = 2
@@ -158,7 +158,7 @@ class QwenImageUploadFirstLastReferencePack(QwenImageReferencePack):
         return tuple(outputs + dimensions)
 
 
-class QwenImageLocalInputFirstLastReferencePack(QwenImageUploadFirstLastReferencePack):
+class ImageLocalInputFirstLastReferencePack(ImageUploadFirstLastReferencePack):
     """Fork-specific first/last-frame manager using ComfyUI/input."""
 
 
@@ -230,8 +230,8 @@ NODE_CLASS_MAPPINGS = {
     "ReferenceSpitter": ReferenceSpitter,
     "OmnicharLocalInputImagesReferencesManager": OmnicharLocalInputImagesReferencesManager,
     "OmnicharImagesReferencesManager": OmnicharImagesReferencesManager,
-    "QwenImageUploadFirstLastReferencePack": QwenImageUploadFirstLastReferencePack,
-    "QwenImageLocalInputFirstLastReferencePack": QwenImageLocalInputFirstLastReferencePack,
+    "ImageUploadFirstLastReferencePack": ImageUploadFirstLastReferencePack,
+    "ImageLocalInputFirstLastReferencePack": ImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MaskSplitter": "Mask splitter",
@@ -240,6 +240,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
     "OmnicharImagesReferencesManager": "Omnichar Images References Manager",
-    "QwenImageUploadFirstLastReferencePack": "Image References Manager (Upload, First/Last)",
-    "QwenImageLocalInputFirstLastReferencePack": "Image References Manager (Local Input, First/Last)",
+    "ImageUploadFirstLastReferencePack": "Image References Manager (Upload, First/Last)",
+    "ImageLocalInputFirstLastReferencePack": "Image References Manager (Local Input, First/Last)",
 }

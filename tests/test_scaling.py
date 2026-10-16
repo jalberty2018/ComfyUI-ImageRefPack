@@ -20,7 +20,7 @@ def test_dimensions_match_advanced_scaler(source, options, expected):
     assert scaling.target_size(*source, **options) == expected
 
 
-@pytest.mark.parametrize("node_class", [nodes.QwenImageUploadFirstLastReferencePack, nodes.QwenImageLocalInputFirstLastReferencePack])
+@pytest.mark.parametrize("node_class", [nodes.ImageUploadFirstLastReferencePack, nodes.ImageLocalInputFirstLastReferencePack])
 def test_first_last_scaling_and_dimensions(node_class, tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
     for name in ("first.png", "last.png"):
