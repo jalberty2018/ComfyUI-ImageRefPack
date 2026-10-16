@@ -8,9 +8,10 @@ downscaling. The original upstream node retains its name, ID, inputs and ten
 
 | Display name | Node ID | Outputs | Source |
 | --- | --- | --- | --- |
-| Image reference manager (Local) | `ImageReferenceManager` | `references` | Local input |
-| Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references` | Upload |
+| Image reference manager (Local) | `ImageReferenceManager` | `references`, `masks` | Local input |
+| Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | Reference spitter | `ReferenceSpitter` | `image_1` through `image_10` | `references` input |
+| Mask splitter | `MaskSplitter` | `mask_1` through `mask_10` | `masks` input |
 | Qwen Image References Manager | `QwenImageReferencePack` | `image_1` through `image_10` | Upload |
 | Qwen Image References Manager (Upload, First/Last) | `QwenImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
 | Qwen Image References Manager (Local Input, First/Last) | `QwenImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
@@ -45,8 +46,24 @@ picker and the same editing and downscaling controls as the ten-image manager.
 The splitter preserves image order, individual dimensions and empty slots.
 The bundle uses the custom `QWEN_IMAGE_REFERENCES` type for these two nodes.
 Use **Image reference manager (Upload)** to upload images instead of selecting
-local input files. It has the same single `references` output and connects to
+local input files. It has the same bundled `references` output and connects to
 the same **Reference spitter**, with editing and downscaling preserved.
+
+### Masks
+
+Both bundled managers have a **brush icon next to the scissors** on each image
+thumbnail. Click it to open that image in the standard **ComfyUI Mask Editor**.
+Save writes the editor's new image file back to that reference; Cancel leaves it
+unchanged. The original source file is not overwritten. The editor opens the
+source image; the manager applies its crop, rotation, mirror and size cap to both
+the saved image and its mask afterwards.
+
+Connect `masks` to **Mask splitter** to obtain `mask_1` through `mask_10`, matched
+to the image outputs. Masks use ComfyUI's inverted alpha convention: white is
+masked, black is unmasked. Images without transparency produce an all-black mask
+with the image's dimensions; empty reference slots return `None`. Saved masks
+survive workflow reloads through their image files in ComfyUI/input.
+The masks bundle has type `QWEN_IMAGE_MASKS`.
 
 On the Qwen managers, double-click a tile or use its edit control to crop, rotate or mirror it.
 Those managers share the Crop presets: **Free**, **1:1 (Square)**,

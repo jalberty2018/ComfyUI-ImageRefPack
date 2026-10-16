@@ -49,6 +49,7 @@ def test_only_current_node_ids_are_registered():
         "ImageReferenceManager",
         "ImageReferenceManagerUpload",
         "ReferenceSpitter",
+        "MaskSplitter",
         "OmnicharImagesReferencesManager",
         "OmnicharLocalInputImagesReferencesManager",
         "QwenImageReferencePack",
@@ -74,14 +75,20 @@ def test_reference_bundle_round_trip(count, node_class, tmp_path, monkeypatch):
         return images[int(Path(path).stem)]
 
     monkeypatch.setattr(nodes.media, "load_image", load_image)
+    monkeypatch.setattr(nodes.media, "load_mask", load_image)
     payload = json.dumps([{"file": f"{i}.png", "rotation": 90, "mirror": True} for i in range(count)])
     manager = node_class()
     splitter = nodes.ReferenceSpitter()
-    assert manager.RETURN_TYPES == splitter.INPUT_TYPES()["required"]["references"]
+    assert manager.RETURN_TYPES[:1] == splitter.INPUT_TYPES()["required"]["references"]
     result = manager.build(payload, max_reference_edge=512)
-    assert len(result) == 1
+    assert len(result) == 2
     outputs = splitter.split(result[0])
     assert all(outputs[i] is images[i] for i in range(count))
     assert outputs[count:] == (None,) * (10 - count)
+    mask_splitter = nodes.MaskSplitter()
+    assert manager.RETURN_TYPES[1:] == mask_splitter.INPUT_TYPES()["required"]["masks"]
+    masks = mask_splitter.split(result[1])
+    assert all(masks[i] is images[i] for i in range(count))
+    assert masks[count:] == (None,) * (10 - count)
     assert all(call["max_edge"] == 512 and call["rotation"] == 90 and call["mirror"] for call in calls)
     assert manager.IS_CHANGED(payload, 512) != manager.IS_CHANGED(payload, 1024)

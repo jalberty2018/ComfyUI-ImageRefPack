@@ -92,6 +92,7 @@
 
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
+import { openReferenceMaskEditor } from "./reference_mask_editor.js";
 
 export let editImageReference;
 
@@ -1546,6 +1547,53 @@ function drawPlayGlyph(ctx, cx, cy, playing) {
 // The crop/trim entry point: a scissors chip in the tile's top-left — the same quiet
 // dark-circle family as the delete chip (vector, no emoji). Inverts to a light chip
 // while the reference carries an edit, mirroring how ♪ signals on/off.
+function drawMaskChip(ctx, x, y) {
+    const radius = CL.del / 2;
+    const cx = x + radius;
+    const cy = y + radius;
+    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+    // A brush next to the scissors, drawn as vectors at any zoom level.
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - 1, cy + 1);
+    ctx.lineTo(cx + 5, cy - 5);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(cx - 2, cy);
+    ctx.quadraticCurveTo(cx - 7, cy + 1, cx - 5, cy + 5);
+    ctx.quadraticCurveTo(cx, cy + 6, cx, cy + 2);
+    ctx.closePath();
+    ctx.fill();
+}
+
+async function editReferenceMask(node, index) {
+    const reference = node._mmrpRefs.images[index];
+    if (!reference || reference.missing) return;
+    let currentFile = reference.file;
+    try {
+        await openReferenceMaskEditor(node, currentFile, (savedFile) => {
+            // Follow the reference object, not an index that deletion can shift.
+            if (!node.graph || !node._mmrpRefs.images.includes(reference) || reference.file !== currentFile) return;
+            dropThumb(currentFile);
+            reference.file = savedFile;
+            reference.missing = false;
+            currentFile = savedFile;
+            syncReferencesWidget(node);
+            node.graph.change?.();
+            node.graph.setDirtyCanvas(true, true);
+            renderNodeBody(node);
+        });
+    } catch (error) {
+        console.error("[QwenImageRefPack] Mask Editor", error);
+        alert(`Could not open/save the mask: ${error.message}`);
+    }
+}
+
 function drawEditChip(ctx, x, y, edited) {
     const dR = CL.del / 2;
     const cx = x + dR + 3;
@@ -1855,10 +1903,17 @@ function draw(node) {
             }
 
             drawTile(ctx, kind, ref, lines, tx, ty, selected, soundState, badgeH, playState);
+            if (node._qwenMaskSupport && kind === "image" && !ref.missing) {
+                drawMaskChip(ctx, tx + CL.del + 7, ty + 3);
+            }
 
             // Hit regions, most specific last — hitTest scans in reverse so the
             // play/delete/soundtrack/edit affordances win over the tile containing them.
             regions.push({ type: "tile", kind, index: i, file: ref.file, x: tx, y: ty, w: CL.tile, h: CL.tile });
+            if (node._qwenMaskSupport && kind === "image" && !ref.missing) {
+                regions.push({ type: "mask", kind, index: i, file: ref.file,
+                    x: tx + CL.del + 7, y: ty + 3, w: CL.del, h: CL.del });
+            }
             if (!ref.missing) {
                 regions.push({
                     type: "edit",
@@ -1972,6 +2027,8 @@ function onCanvasMouseDown(node, e) {
         toggleSoundtrack(node, hit.file);
     } else if (hit.type === "play") {
         togglePreview(node, hit);
+    } else if (hit.type === "mask") {
+        void editReferenceMask(node, hit.index);
     } else if (hit.type === "edit") {
         openEditModal(node, hit.kind, hit.index);
     } else if (hit.type === "add") {
@@ -3257,6 +3314,11 @@ function buildCustomBlock(node) {
     canvas.className = "mmrp-canvas";
     canvas.style.height = `${CANVAS_ROWS.height}px`; // fixed, set once
     canvas.addEventListener("mousedown", (e) => onCanvasMouseDown(node, e));
+    canvas.addEventListener("mousemove", (e) => {
+        const pos = getMousePos(canvas, e);
+        const hit = hitTest(node, pos.x, pos.y);
+        canvas.title = hit?.type === "mask" ? "Open in ComfyUI Mask Editor" : "";
+    });
     canvas.addEventListener("dblclick", (e) => onCanvasDblClick(node, e));
     // Keep litegraph's node context menu off the tiles (matches the reference's
     // per-item contextmenu swallow).
@@ -4487,6 +4549,7 @@ app.registerExtension({
             injectStyles();
             const node = this;
             node._qwenLocalInput = nodeData.name === LOCAL_NODE_NAME || nodeData.name === "ImageReferenceManager";
+            node._qwenMaskSupport = ["ImageReferenceManager", "ImageReferenceManagerUpload"].includes(nodeData.name);
 
             const refsWidget = widgetByName(node, "references_json");
             node._mmrpRefs = parseRefsValue(refsWidget);

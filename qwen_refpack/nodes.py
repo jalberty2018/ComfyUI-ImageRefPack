@@ -167,18 +167,28 @@ class QwenImageLocalInput10ReferencePack(QwenImageReferencePack):
 class ImageReferenceManager(QwenImageLocalInput10ReferencePack):
     """Carry ten independently sized images over a single connection."""
 
-    RETURN_TYPES = ("QWEN_IMAGE_REFERENCES",)
-    RETURN_NAMES = ("references",)
-    DESCRIPTION = "Manage up to ten local input images and bundle them for Reference spitter."
+    RETURN_TYPES = ("QWEN_IMAGE_REFERENCES", "QWEN_IMAGE_MASKS")
+    RETURN_NAMES = ("references", "masks")
+    DESCRIPTION = "Manage up to ten local images and masks. Connect the bundles to Reference spitter and Mask splitter."
 
     def build(self, references_json="", max_reference_edge=DEFAULT_MAX_REFERENCE_EDGE, **kwargs):
-        return (super().build(references_json, max_reference_edge, **kwargs),)
+        import folder_paths
+        images = super().build(references_json, max_reference_edge, **kwargs)
+        reference_set = refs.ReferenceSet.from_json(references_json, max_images=self.MAX_IMAGES)
+        masks = [None] * self.MAX_IMAGES
+        for index, reference in enumerate(reference_set.references):
+            masks[index] = media.load_mask(
+                str(refs.reference_path(folder_paths.get_input_directory(), reference.file)),
+                crop=reference.crop, max_edge=max_reference_edge,
+                rotation=reference.rotation, mirror=reference.mirror,
+            )
+        return (images, tuple(masks))
 
 
 class ImageReferenceManagerUpload(ImageReferenceManager):
     """Upload variant of the single-output reference manager."""
 
-    DESCRIPTION = "Upload up to ten images and bundle them for Reference spitter."
+    DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to Reference spitter and Mask splitter."
 
 
 class ReferenceSpitter:
@@ -198,7 +208,25 @@ class ReferenceSpitter:
         return tuple(references)
 
 
+class MaskSplitter:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"masks": ("QWEN_IMAGE_MASKS",)}}
+
+    RETURN_TYPES = ("MASK",) * 10
+    RETURN_NAMES = tuple(f"mask_{i}" for i in range(1, 11))
+    FUNCTION = "split"
+    CATEGORY = "Qwen Image"
+    DESCRIPTION = "Split the managers' masks bundle into ten masks in image order."
+
+    def split(self, masks):
+        if not isinstance(masks, (tuple, list)) or len(masks) != 10:
+            raise ValueError("Expected ten mask slots from Image reference manager")
+        return tuple(masks)
+
+
 NODE_CLASS_MAPPINGS = {
+    "MaskSplitter": MaskSplitter,
     "ImageReferenceManagerUpload": ImageReferenceManagerUpload,
     "ImageReferenceManager": ImageReferenceManager,
     "ReferenceSpitter": ReferenceSpitter,
@@ -210,6 +238,7 @@ NODE_CLASS_MAPPINGS = {
     "QwenImageLocalInput10ReferencePack": QwenImageLocalInput10ReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "MaskSplitter": "Mask splitter",
     "ImageReferenceManagerUpload": "Image reference manager (Upload)",
     "ImageReferenceManager": "Image reference manager (Local)",
     "ReferenceSpitter": "Reference spitter",

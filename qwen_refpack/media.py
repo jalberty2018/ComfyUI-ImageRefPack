@@ -146,6 +146,23 @@ def load_image(path: str, crop=None, max_edge: int = 0, rotation: int = 0, mirro
         return torch.from_numpy(arr)[None, ...]
 
 
+def load_mask(path: str, crop=None, max_edge: int = 0, rotation: int = 0, mirror: bool = False):
+    """ComfyUI MASK [1,H,W]: inverted alpha, aligned with load_image's transforms."""
+    import numpy as np
+    import torch
+    from PIL import Image, ImageOps
+
+    with Image.open(path) as source:
+        img = ImageOps.exif_transpose(source).convert("RGBA")
+        mask = ImageOps.invert(img.getchannel("A"))
+    mask = _orient_image(mask, rotation, mirror)
+    if crop is not None:
+        mask = mask.crop(_crop_box(crop, mask.width, mask.height))
+    if max_edge:
+        mask.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)
+    return torch.from_numpy(np.array(mask).astype(np.float32) / 255.0)[None, ...]
+
+
 def load_audio(path: str, trim=None) -> dict:
     """{"waveform": [1, C, L], "sample_rate": int} - CU/comfy_extras/nodes_audio.py:333
     returns (waveform, sample_rate); the AUDIO socket shape wraps it with a batch dim
