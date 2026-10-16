@@ -1,4 +1,4 @@
-"""Image reference manager: image inputs only, no prompt generation."""
+"""LS Image reference manager: image inputs only, no prompt generation."""
 from __future__ import annotations
 import hashlib
 import json
@@ -53,7 +53,7 @@ class ImageReferencePackBase:
             outputs[index] = media.load_image(str(refs.reference_path(input_dir, reference.file)), crop=reference.crop, max_edge=max_reference_edge, rotation=reference.rotation, mirror=reference.mirror)
         return tuple(outputs)
 
-class OmnicharImagesReferencesManager(ImageReferencePackBase):
+class LSOmnicharImagesReferencesManager(ImageReferencePackBase):
     """Nine named slots: removing a reference never moves another role or slot."""
 
     MAX_IMAGES = 9
@@ -107,11 +107,11 @@ class OmnicharImagesReferencesManager(ImageReferencePackBase):
         return tuple(outputs)
 
 
-class OmnicharLocalInputImagesReferencesManager(OmnicharImagesReferencesManager):
+class LSOmnicharLocalInputImagesReferencesManager(LSOmnicharImagesReferencesManager):
     DESCRIPTION = "Choose nine face, body and clothes references from ComfyUI/input, including subfolders."
 
 
-class ImageUploadFirstLastReferencePack(ImageReferencePackBase):
+class LSImageUploadFirstLastReferencePack(ImageReferencePackBase):
     """Fork-specific first/last-frame upload manager."""
 
     MAX_IMAGES = 2
@@ -158,16 +158,16 @@ class ImageUploadFirstLastReferencePack(ImageReferencePackBase):
         return tuple(outputs + dimensions)
 
 
-class ImageLocalInputFirstLastReferencePack(ImageUploadFirstLastReferencePack):
+class LSImageLocalInputFirstLastReferencePack(LSImageUploadFirstLastReferencePack):
     """Fork-specific first/last-frame manager using ComfyUI/input."""
 
 
-class ImageReferenceManager(ImageReferencePackBase):
+class LSImageReferenceManager(ImageReferencePackBase):
     """Carry ten independently sized images over a single connection."""
 
     RETURN_TYPES = ("IMAGE_REFERENCES", "IMAGE_MASKS")
     RETURN_NAMES = ("references", "masks")
-    DESCRIPTION = "Manage up to ten local images and masks. Connect the bundles to Reference spitter and Mask splitter."
+    DESCRIPTION = "Manage up to ten local images and masks. Connect the bundles to LS Reference spitter and LS Mask splitter."
 
     def build(self, references_json="", max_reference_edge=DEFAULT_MAX_REFERENCE_EDGE, **kwargs):
         import folder_paths
@@ -183,13 +183,13 @@ class ImageReferenceManager(ImageReferencePackBase):
         return (images, tuple(masks))
 
 
-class ImageReferenceManagerUpload(ImageReferenceManager):
+class LSImageReferenceManagerUpload(LSImageReferenceManager):
     """Upload variant of the single-output reference manager."""
 
-    DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to Reference spitter and Mask splitter."
+    DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to LS Reference spitter and LS Mask splitter."
 
 
-class ReferenceSpitter:
+class LSReferenceSpitter:
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {"references": ("IMAGE_REFERENCES",)}}
@@ -198,15 +198,15 @@ class ReferenceSpitter:
     RETURN_NAMES = tuple(f"image_{i}" for i in range(1, 11))
     FUNCTION = "split"
     CATEGORY = "Image"
-    DESCRIPTION = "Split Image reference manager's bundle into ten images. Empty slots return None."
+    DESCRIPTION = "Split LS Image reference manager's bundle into ten images. Empty slots return None."
 
     def split(self, references):
         if not isinstance(references, (tuple, list)) or len(references) != 10:
-            raise ValueError("Expected ten image slots from Image reference manager")
+            raise ValueError("Expected ten image slots from LS Image reference manager")
         return tuple(references)
 
 
-class MaskSplitter:
+class LSMaskSplitter:
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {"masks": ("IMAGE_MASKS",)}}
@@ -219,27 +219,27 @@ class MaskSplitter:
 
     def split(self, masks):
         if not isinstance(masks, (tuple, list)) or len(masks) != 10:
-            raise ValueError("Expected ten mask slots from Image reference manager")
+            raise ValueError("Expected ten mask slots from LS Image reference manager")
         return tuple(masks)
 
 
 NODE_CLASS_MAPPINGS = {
-    "MaskSplitter": MaskSplitter,
-    "ImageReferenceManagerUpload": ImageReferenceManagerUpload,
-    "ImageReferenceManager": ImageReferenceManager,
-    "ReferenceSpitter": ReferenceSpitter,
-    "OmnicharLocalInputImagesReferencesManager": OmnicharLocalInputImagesReferencesManager,
-    "OmnicharImagesReferencesManager": OmnicharImagesReferencesManager,
-    "ImageUploadFirstLastReferencePack": ImageUploadFirstLastReferencePack,
-    "ImageLocalInputFirstLastReferencePack": ImageLocalInputFirstLastReferencePack,
+    "LSMaskSplitter": LSMaskSplitter,
+    "LSImageReferenceManagerUpload": LSImageReferenceManagerUpload,
+    "LSImageReferenceManager": LSImageReferenceManager,
+    "LSReferenceSpitter": LSReferenceSpitter,
+    "LSOmnicharLocalInputImagesReferencesManager": LSOmnicharLocalInputImagesReferencesManager,
+    "LSOmnicharImagesReferencesManager": LSOmnicharImagesReferencesManager,
+    "LSImageUploadFirstLastReferencePack": LSImageUploadFirstLastReferencePack,
+    "LSImageLocalInputFirstLastReferencePack": LSImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "MaskSplitter": "Mask splitter",
-    "ImageReferenceManagerUpload": "Image reference manager (Upload)",
-    "ImageReferenceManager": "Image reference manager (Local)",
-    "ReferenceSpitter": "Reference spitter",
-    "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
-    "OmnicharImagesReferencesManager": "Omnichar Images References Manager (Upload)",
-    "ImageUploadFirstLastReferencePack": "Image References Manager (Upload, First/Last)",
-    "ImageLocalInputFirstLastReferencePack": "Image References Manager (Local Input, First/Last)",
+    "LSMaskSplitter": "LS Mask splitter",
+    "LSImageReferenceManagerUpload": "LS Image reference manager (Upload)",
+    "LSImageReferenceManager": "LS Image reference manager (Local)",
+    "LSReferenceSpitter": "LS Reference spitter",
+    "LSOmnicharLocalInputImagesReferencesManager": "LS Omnichar Images References Manager (Local Input)",
+    "LSOmnicharImagesReferencesManager": "LS Omnichar Images References Manager (Upload)",
+    "LSImageUploadFirstLastReferencePack": "LS Image References Manager (Upload, First/Last)",
+    "LSImageLocalInputFirstLastReferencePack": "LS Image References Manager (Local Input, First/Last)",
 }

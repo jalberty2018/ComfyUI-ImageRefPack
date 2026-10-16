@@ -106,8 +106,8 @@ export function referenceImageUrl(file) {
 }
 
 function registerReferenceManager(tenImages = false) {
-const NODE_NAME = tenImages ? "ImageReferenceManagerUpload" : "ImageUploadFirstLastReferencePack";
-const LOCAL_NODE_NAME = tenImages ? "ImageReferenceManager" : "ImageLocalInputFirstLastReferencePack";
+const NODE_NAME = tenImages ? "LSImageReferenceManagerUpload" : "LSImageUploadFirstLastReferencePack";
+const LOCAL_NODE_NAME = tenImages ? "LSImageReferenceManager" : "LSImageLocalInputFirstLastReferencePack";
 
 if (!tenImages) editImageReference = (reference, onSave) => {
     injectStyles();
@@ -4548,7 +4548,7 @@ app.registerExtension({
             injectStyles();
             const node = this;
             node._imageRefLocalInput = nodeData.name === LOCAL_NODE_NAME;
-            node._imageRefMaskSupport = ["ImageReferenceManager", "ImageReferenceManagerUpload"].includes(nodeData.name);
+            node._imageRefMaskSupport = ["LSImageReferenceManager", "LSImageReferenceManagerUpload"].includes(nodeData.name);
 
             const refsWidget = widgetByName(node, "references_json");
             node._mmrpRefs = parseRefsValue(refsWidget);

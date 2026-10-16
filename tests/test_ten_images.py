@@ -28,14 +28,14 @@ def test_shared_image_loader_order_and_empty_slots(tmp_path, monkeypatch):
     with pytest.raises(ReferenceError, match="at most 10"):
         node.build(json.dumps(refs + refs[:1]))
     with pytest.raises(ReferenceError, match="at most 2"):
-        nodes.ImageUploadFirstLastReferencePack().build(json.dumps(refs))
+        nodes.LSImageUploadFirstLastReferencePack().build(json.dumps(refs))
 
 
 def test_manager_and_first_last_contracts():
-    manager = nodes.NODE_CLASS_MAPPINGS["ImageReferenceManager"]
+    manager = nodes.NODE_CLASS_MAPPINGS["LSImageReferenceManager"]
     assert manager.RETURN_NAMES == ("references", "masks")
     assert list(manager.INPUT_TYPES()["optional"]) == ["references_json", "max_reference_edge"]
-    for name in ("ImageUploadFirstLastReferencePack", "ImageLocalInputFirstLastReferencePack"):
+    for name in ("LSImageUploadFirstLastReferencePack", "LSImageLocalInputFirstLastReferencePack"):
         variant = nodes.NODE_CLASS_MAPPINGS[name]
         assert variant.RETURN_NAMES == ("First image", "Last image", "first_width", "first_height", "last_width", "last_height")
         assert variant.MAX_IMAGES == 2
@@ -44,21 +44,21 @@ def test_manager_and_first_last_contracts():
 
 def test_only_current_node_ids_are_registered():
     expected = {
-        "ImageReferenceManager",
-        "ImageReferenceManagerUpload",
-        "ReferenceSpitter",
-        "MaskSplitter",
-        "OmnicharImagesReferencesManager",
-        "OmnicharLocalInputImagesReferencesManager",
-        "ImageUploadFirstLastReferencePack",
-        "ImageLocalInputFirstLastReferencePack",
+        "LSImageReferenceManager",
+        "LSImageReferenceManagerUpload",
+        "LSReferenceSpitter",
+        "LSMaskSplitter",
+        "LSOmnicharImagesReferencesManager",
+        "LSOmnicharLocalInputImagesReferencesManager",
+        "LSImageUploadFirstLastReferencePack",
+        "LSImageLocalInputFirstLastReferencePack",
     }
     assert set(nodes.NODE_CLASS_MAPPINGS) == expected
     assert set(nodes.NODE_DISPLAY_NAME_MAPPINGS) == expected
 
 
 @pytest.mark.parametrize("count", [0, 1, 10])
-@pytest.mark.parametrize("node_class", [nodes.ImageReferenceManager, nodes.ImageReferenceManagerUpload])
+@pytest.mark.parametrize("node_class", [nodes.LSImageReferenceManager, nodes.LSImageReferenceManagerUpload])
 def test_reference_bundle_round_trip(count, node_class, tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
     images = [object() for _ in range(count)]
@@ -74,14 +74,14 @@ def test_reference_bundle_round_trip(count, node_class, tmp_path, monkeypatch):
     monkeypatch.setattr(nodes.media, "load_mask", load_image)
     payload = json.dumps([{"file": f"{i}.png", "rotation": 90, "mirror": True} for i in range(count)])
     manager = node_class()
-    splitter = nodes.ReferenceSpitter()
+    splitter = nodes.LSReferenceSpitter()
     assert manager.RETURN_TYPES[:1] == splitter.INPUT_TYPES()["required"]["references"]
     result = manager.build(payload, max_reference_edge=512)
     assert len(result) == 2
     outputs = splitter.split(result[0])
     assert all(outputs[i] is images[i] for i in range(count))
     assert outputs[count:] == (None,) * (10 - count)
-    mask_splitter = nodes.MaskSplitter()
+    mask_splitter = nodes.LSMaskSplitter()
     assert manager.RETURN_TYPES[1:] == mask_splitter.INPUT_TYPES()["required"]["masks"]
     masks = mask_splitter.split(result[1])
     assert all(masks[i] is images[i] for i in range(count))

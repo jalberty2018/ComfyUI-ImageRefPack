@@ -45,7 +45,7 @@ def test_opaque_image_has_zero_mask_of_matching_size(image_deps, tmp_path):
     assert torch.count_nonzero(mask) == 0
 
 
-@pytest.mark.parametrize("node_class", [nodes.ImageReferenceManager, nodes.ImageReferenceManagerUpload])
+@pytest.mark.parametrize("node_class", [nodes.LSImageReferenceManager, nodes.LSImageReferenceManagerUpload])
 def test_saved_mask_bundle_and_workflow_reload(image_deps, tmp_path, monkeypatch, node_class):
     Image, _, torch = image_deps
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
@@ -56,7 +56,7 @@ def test_saved_mask_bundle_and_workflow_reload(image_deps, tmp_path, monkeypatch
         {"kind": "image", "file": "plain.png"},
     ]})
     images, masks = node_class().build(workflow_value)
-    split = nodes.MaskSplitter().split(masks)
+    split = nodes.LSMaskSplitter().split(masks)
     assert split[0].shape == images[0].shape[:3] == (1, 12, 8)
     assert torch.all(split[0] == 1)
     assert split[1].shape == images[1].shape[:3] == (1, 9, 7)
@@ -70,4 +70,4 @@ def test_saved_mask_bundle_and_workflow_reload(image_deps, tmp_path, monkeypatch
 @pytest.mark.parametrize("invalid", [None, (), (None,) * 9, (None,) * 11, "invalid"])
 def test_mask_splitter_rejects_invalid_bundles(invalid):
     with pytest.raises(ValueError, match="ten mask slots"):
-        nodes.MaskSplitter().split(invalid)
+        nodes.LSMaskSplitter().split(invalid)

@@ -45,8 +45,8 @@ function imageUrl(file, reference = {}) {
 app.registerExtension({
     name: "ImageRefPack.OmnicharReferences",
     async beforeRegisterNodeDef(nodeType, nodeData) {
-        const localInput = nodeData.name === "OmnicharLocalInputImagesReferencesManager";
-        if (!localInput && nodeData.name !== "OmnicharImagesReferencesManager") return;
+        const localInput = nodeData.name === "LSOmnicharLocalInputImagesReferencesManager";
+        if (!localInput && nodeData.name !== "LSOmnicharImagesReferencesManager") return;
         const previousCreated = nodeType.prototype.onNodeCreated;
         nodeType.prototype.onNodeCreated = function () {
             previousCreated?.apply(this, arguments);

@@ -29,6 +29,6 @@ def test_frontend_does_not_expose_prompt_video_or_audio_controls():
 
 
 def test_current_frontend_registration():
-    assert 'tenImages ? "ImageReferenceManagerUpload" : "ImageUploadFirstLastReferencePack"' in SOURCE
-    assert 'tenImages ? "ImageReferenceManager" : "ImageLocalInputFirstLastReferencePack"' in SOURCE
+    assert 'tenImages ? "LSImageReferenceManagerUpload" : "LSImageUploadFirstLastReferencePack"' in SOURCE
+    assert 'tenImages ? "LSImageReferenceManager" : "LSImageLocalInputFirstLastReferencePack"' in SOURCE
     assert 'while (this.outputs?.length > names.length)' in SOURCE

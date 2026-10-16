@@ -8,7 +8,7 @@ from image_refpack import nodes
 from image_refpack.refs import ReferenceError
 
 
-@pytest.fixture(params=[nodes.OmnicharImagesReferencesManager, nodes.OmnicharLocalInputImagesReferencesManager])
+@pytest.fixture(params=[nodes.LSOmnicharImagesReferencesManager, nodes.LSOmnicharLocalInputImagesReferencesManager])
 def manager(tmp_path, monkeypatch, request):
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
     for name in ("face.png", "body.png", "clothes.png"):
@@ -26,7 +26,7 @@ def test_nine_outputs_match_encode_character(manager):
     assert node.RETURN_NAMES == ("face", "face_2", "face_3", "body", "body_2", "body_3", "cloths", "cloths_2", "cloths_3")
     assert node.RETURN_TYPES == ("IMAGE",) * 9
     assert node.build() == (None,) * 9
-    assert nodes.NODE_DISPLAY_NAME_MAPPINGS["OmnicharImagesReferencesManager"] == "Omnichar Images References Manager (Upload)"
+    assert nodes.NODE_DISPLAY_NAME_MAPPINGS["LSOmnicharImagesReferencesManager"] == "LS Omnichar Images References Manager (Upload)"
 
 
 def test_sparse_roles_and_deleted_slots_do_not_shift(manager):

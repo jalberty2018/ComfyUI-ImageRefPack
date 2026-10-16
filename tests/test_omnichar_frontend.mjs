@@ -55,7 +55,7 @@ async function setup(localInput = false) {
         setSize(value) { this.size = value; }
         setDirtyCanvas() {}
     }
-    await extension.beforeRegisterNodeDef(Node, { name: localInput ? "OmnicharLocalInputImagesReferencesManager" : "OmnicharImagesReferencesManager" });
+    await extension.beforeRegisterNodeDef(Node, { name: localInput ? "LSOmnicharLocalInputImagesReferencesManager" : "LSOmnicharImagesReferencesManager" });
     const node = new Node();
     node.onNodeCreated();
     return { root, node, state, pending, body, edits };
