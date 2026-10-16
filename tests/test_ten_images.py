@@ -9,8 +9,7 @@ from qwen_refpack import nodes
 from qwen_refpack.refs import ReferenceError
 
 
-@pytest.mark.parametrize("node_class", [nodes.QwenImageReferencePack, nodes.QwenImageLocalInput10ReferencePack])
-def test_ten_image_order_and_empty_slots(node_class, tmp_path, monkeypatch):
+def test_shared_image_loader_order_and_empty_slots(tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
     nested = tmp_path / "nested"
     nested.mkdir()
@@ -18,7 +17,7 @@ def test_ten_image_order_and_empty_slots(node_class, tmp_path, monkeypatch):
         (nested / f"{i}.png").touch()
     monkeypatch.setattr(nodes.media, "load_image", lambda path, **kwargs: path)
     refs = [{"file": f"nested/{i}.png"} for i in range(10)]
-    node = node_class()
+    node = nodes.QwenImageReferencePack()
     assert node.RETURN_TYPES == ("IMAGE",) * 10
     assert node.RETURN_NAMES == tuple(f"image_{i}" for i in range(1, 11))
     result = node.build(json.dumps(refs))
@@ -32,11 +31,10 @@ def test_ten_image_order_and_empty_slots(node_class, tmp_path, monkeypatch):
         nodes.QwenImageUploadFirstLastReferencePack().build(json.dumps(refs))
 
 
-def test_upstream_identity_and_fork_contracts():
-    original = nodes.NODE_CLASS_MAPPINGS["QwenImageReferencePack"]
-    assert nodes.NODE_DISPLAY_NAME_MAPPINGS["QwenImageReferencePack"] == "Qwen Image References Manager"
-    assert original.RETURN_NAMES == tuple(f"image_{i}" for i in range(1, 11))
-    assert list(original.INPUT_TYPES()["optional"]) == ["references_json", "max_reference_edge"]
+def test_manager_and_first_last_contracts():
+    manager = nodes.NODE_CLASS_MAPPINGS["ImageReferenceManager"]
+    assert manager.RETURN_NAMES == ("references", "masks")
+    assert list(manager.INPUT_TYPES()["optional"]) == ["references_json", "max_reference_edge"]
     for name in ("QwenImageUploadFirstLastReferencePack", "QwenImageLocalInputFirstLastReferencePack"):
         variant = nodes.NODE_CLASS_MAPPINGS[name]
         assert variant.RETURN_NAMES == ("First image", "Last image", "first_width", "first_height", "last_width", "last_height")
@@ -52,10 +50,8 @@ def test_only_current_node_ids_are_registered():
         "MaskSplitter",
         "OmnicharImagesReferencesManager",
         "OmnicharLocalInputImagesReferencesManager",
-        "QwenImageReferencePack",
         "QwenImageUploadFirstLastReferencePack",
         "QwenImageLocalInputFirstLastReferencePack",
-        "QwenImageLocalInput10ReferencePack",
     }
     assert set(nodes.NODE_CLASS_MAPPINGS) == expected
     assert set(nodes.NODE_DISPLAY_NAME_MAPPINGS) == expected

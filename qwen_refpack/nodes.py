@@ -21,6 +21,8 @@ def _signature(reference_set: refs.ReferenceSet, input_dir: str) -> str:
     return digest.hexdigest()
 
 class QwenImageReferencePack:
+    """Internal image-loading base; not registered as a selectable ComfyUI node."""
+
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {}, "optional": {
@@ -160,11 +162,7 @@ class QwenImageLocalInputFirstLastReferencePack(QwenImageUploadFirstLastReferenc
     """Fork-specific first/last-frame manager using ComfyUI/input."""
 
 
-class QwenImageLocalInput10ReferencePack(QwenImageReferencePack):
-    """Fork-specific ten-image manager using ComfyUI/input."""
-
-
-class ImageReferenceManager(QwenImageLocalInput10ReferencePack):
+class ImageReferenceManager(QwenImageReferencePack):
     """Carry ten independently sized images over a single connection."""
 
     RETURN_TYPES = ("QWEN_IMAGE_REFERENCES", "QWEN_IMAGE_MASKS")
@@ -232,10 +230,8 @@ NODE_CLASS_MAPPINGS = {
     "ReferenceSpitter": ReferenceSpitter,
     "OmnicharLocalInputImagesReferencesManager": OmnicharLocalInputImagesReferencesManager,
     "OmnicharImagesReferencesManager": OmnicharImagesReferencesManager,
-    "QwenImageReferencePack": QwenImageReferencePack,
     "QwenImageUploadFirstLastReferencePack": QwenImageUploadFirstLastReferencePack,
     "QwenImageLocalInputFirstLastReferencePack": QwenImageLocalInputFirstLastReferencePack,
-    "QwenImageLocalInput10ReferencePack": QwenImageLocalInput10ReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MaskSplitter": "Mask splitter",
@@ -244,8 +240,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
     "OmnicharImagesReferencesManager": "Omnichar Images References Manager",
-    "QwenImageReferencePack": "Qwen Image References Manager",
     "QwenImageUploadFirstLastReferencePack": "Qwen Image References Manager (Upload, First/Last)",
     "QwenImageLocalInputFirstLastReferencePack": "Qwen Image References Manager (Local Input, First/Last)",
-    "QwenImageLocalInput10ReferencePack": "Qwen Image References Manager (Local Input, 10 Images)",
 }

@@ -106,8 +106,8 @@ export function referenceImageUrl(file) {
 }
 
 function registerReferenceManager(tenImages = false) {
-const NODE_NAME = tenImages ? "QwenImageReferencePack" : "QwenImageUploadFirstLastReferencePack";
-const LOCAL_NODE_NAME = tenImages ? "QwenImageLocalInput10ReferencePack" : "QwenImageLocalInputFirstLastReferencePack";
+const NODE_NAME = tenImages ? "ImageReferenceManagerUpload" : "QwenImageUploadFirstLastReferencePack";
+const LOCAL_NODE_NAME = tenImages ? "ImageReferenceManager" : "QwenImageLocalInputFirstLastReferencePack";
 
 if (!tenImages) editImageReference = (reference, onSave) => {
     injectStyles();
@@ -4540,7 +4540,6 @@ app.registerExtension({
 
     async beforeRegisterNodeDef(nodeType, nodeData) {
         const supportedNames = [NODE_NAME, LOCAL_NODE_NAME];
-        if (tenImages) supportedNames.push("ImageReferenceManager", "ImageReferenceManagerUpload");
         if (!supportedNames.includes(nodeData.name)) return;
 
         const origOnNodeCreated = nodeType.prototype.onNodeCreated;
@@ -4548,7 +4547,7 @@ app.registerExtension({
             origOnNodeCreated?.apply(this, arguments);
             injectStyles();
             const node = this;
-            node._qwenLocalInput = nodeData.name === LOCAL_NODE_NAME || nodeData.name === "ImageReferenceManager";
+            node._qwenLocalInput = nodeData.name === LOCAL_NODE_NAME;
             node._qwenMaskSupport = ["ImageReferenceManager", "ImageReferenceManagerUpload"].includes(nodeData.name);
 
             const refsWidget = widgetByName(node, "references_json");

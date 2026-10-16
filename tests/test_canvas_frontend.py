@@ -28,8 +28,9 @@ def test_frontend_does_not_expose_prompt_video_or_audio_controls():
     assert "installDirectorRunHook" not in registration
 
 
-def test_upstream_and_fork_frontend_registration():
-    assert 'tenImages ? "QwenImageReferencePack" : "QwenImageUploadFirstLastReferencePack"' in SOURCE
-    assert 'tenImages ? "QwenImageLocalInput10ReferencePack" : "QwenImageLocalInputFirstLastReferencePack"' in SOURCE
-    assert 'QwenImageReferencePack10' not in SOURCE
+def test_current_frontend_registration():
+    assert 'tenImages ? "ImageReferenceManagerUpload" : "QwenImageUploadFirstLastReferencePack"' in SOURCE
+    assert 'tenImages ? "ImageReferenceManager" : "QwenImageLocalInputFirstLastReferencePack"' in SOURCE
+    assert '"QwenImageReferencePack"' not in SOURCE
+    assert '"QwenImageLocalInput10ReferencePack"' not in SOURCE
     assert 'while (this.outputs?.length > names.length)' in SOURCE

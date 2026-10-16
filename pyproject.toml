@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-qwenimagerefpack"
-description = "Upstream-compatible ten-image reference manager with first/last and local input variants."
+description = "Image and mask reference managers with upload, local input, first/last and Omnichar variants."
 version = "0.1.0"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"

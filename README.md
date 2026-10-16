@@ -1,8 +1,7 @@
 # Qwen Image References Manager
 
 Image-only reference nodes with crop, rotation, horizontal mirroring and optional
-downscaling. The original upstream node retains its name, ID, inputs and ten
-`IMAGE` outputs, so original workflows load without changing their node IDs.
+downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 
 ## Nodes
 
@@ -12,16 +11,15 @@ downscaling. The original upstream node retains its name, ID, inputs and ten
 | Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | Reference spitter | `ReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | Mask splitter | `MaskSplitter` | `mask_1` through `mask_10` | `masks` input |
-| Qwen Image References Manager | `QwenImageReferencePack` | `image_1` through `image_10` | Upload |
 | Qwen Image References Manager (Upload, First/Last) | `QwenImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
 | Qwen Image References Manager (Local Input, First/Last) | `QwenImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
-| Qwen Image References Manager (Local Input, 10 Images) | `QwenImageLocalInput10ReferencePack` | `image_1` through `image_10` | Local input |
 | Omnichar Images References Manager | `OmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
 | Omnichar Images References Manager (Local Input) | `OmnicharLocalInputImagesReferencesManager` | Same nine named outputs | Local input |
 
-Only the original upstream ID `QwenImageReferencePack` is preserved for compatibility.
-The fork variants use the descriptive IDs above; old fork IDs and workflow
-migrations are no longer supported. Add the current nodes to replace old fork nodes.
+The old ten-output managers (`QwenImageReferencePack` and
+`QwenImageLocalInput10ReferencePack`) have been removed. In existing workflows,
+replace them with **Image reference manager (Upload)** or **Image reference
+manager (Local)** and connect **Reference spitter** for the ten image outputs.
 
 ## Install
 
