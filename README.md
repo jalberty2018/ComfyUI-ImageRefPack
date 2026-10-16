@@ -11,8 +11,8 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 | Image reference manager (Upload) | `ImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | Reference spitter | `ReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | Mask splitter | `MaskSplitter` | `mask_1` through `mask_10` | `masks` input |
-| Qwen Image References Manager (Upload, First/Last) | `QwenImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
-| Qwen Image References Manager (Local Input, First/Last) | `QwenImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
+| Image References Manager (Upload, First/Last) | `QwenImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
+| Image References Manager (Local Input, First/Last) | `QwenImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
 | Omnichar Images References Manager | `OmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
 | Omnichar Images References Manager (Local Input) | `OmnicharLocalInputImagesReferencesManager` | Same nine named outputs | Local input |
 

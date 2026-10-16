@@ -240,6 +240,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
     "OmnicharImagesReferencesManager": "Omnichar Images References Manager",
-    "QwenImageUploadFirstLastReferencePack": "Qwen Image References Manager (Upload, First/Last)",
-    "QwenImageLocalInputFirstLastReferencePack": "Qwen Image References Manager (Local Input, First/Last)",
+    "QwenImageUploadFirstLastReferencePack": "Image References Manager (Upload, First/Last)",
+    "QwenImageLocalInputFirstLastReferencePack": "Image References Manager (Local Input, First/Last)",
 }
