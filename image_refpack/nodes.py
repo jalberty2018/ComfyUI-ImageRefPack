@@ -239,7 +239,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImageReferenceManager": "Image reference manager (Local)",
     "ReferenceSpitter": "Reference spitter",
     "OmnicharLocalInputImagesReferencesManager": "Omnichar Images References Manager (Local Input)",
-    "OmnicharImagesReferencesManager": "Omnichar Images References Manager",
+    "OmnicharImagesReferencesManager": "Omnichar Images References Manager (Upload)",
     "ImageUploadFirstLastReferencePack": "Image References Manager (Upload, First/Last)",
     "ImageLocalInputFirstLastReferencePack": "Image References Manager (Local Input, First/Last)",
 }

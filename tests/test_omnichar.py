@@ -26,7 +26,7 @@ def test_nine_outputs_match_encode_character(manager):
     assert node.RETURN_NAMES == ("face", "face_2", "face_3", "body", "body_2", "body_3", "cloths", "cloths_2", "cloths_3")
     assert node.RETURN_TYPES == ("IMAGE",) * 9
     assert node.build() == (None,) * 9
-    assert nodes.NODE_DISPLAY_NAME_MAPPINGS["OmnicharImagesReferencesManager"] == "Omnichar Images References Manager"
+    assert nodes.NODE_DISPLAY_NAME_MAPPINGS["OmnicharImagesReferencesManager"] == "Omnichar Images References Manager (Upload)"
 
 
 def test_sparse_roles_and_deleted_slots_do_not_shift(manager):

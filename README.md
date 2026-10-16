@@ -13,7 +13,7 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 | Mask splitter | `MaskSplitter` | `mask_1` through `mask_10` | `masks` input |
 | Image References Manager (Upload, First/Last) | `ImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
 | Image References Manager (Local Input, First/Last) | `ImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
-| Omnichar Images References Manager | `OmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
+| Omnichar Images References Manager (Upload) | `OmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
 | Omnichar Images References Manager (Local Input) | `OmnicharLocalInputImagesReferencesManager` | Same nine named outputs | Local input |
 
 The old ten-output managers have been removed. In existing workflows,
@@ -94,7 +94,7 @@ These nodes do not generate prompts and have no video or audio support.
 
 ### Omnichar character references
 
-Add **Omnichar Images References Manager** from **Image**. Its three rows
+Add **Omnichar Images References Manager (Upload)** from **Image**. Its three rows
 are **Face**, **Body**, and **Clothes**, each with three fixed image slots.
 Click a slot to upload or replace one image, or drop an image onto that slot.
 Use its × button to clear it. Empty slots return `None`; other images never
