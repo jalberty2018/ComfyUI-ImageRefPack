@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from qwen_refpack import media, nodes
+from image_refpack import media, nodes
 
 
 @pytest.fixture

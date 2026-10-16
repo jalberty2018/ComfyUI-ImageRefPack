@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
-const source = readFileSync(new URL("../web/qwen_image_refpack.js", import.meta.url), "utf8");
+const source = readFileSync(new URL("../web/image_refpack.js", import.meta.url), "utf8");
 const shared = source.match(/export function referenceImageUrl\(file\) \{[\s\S]*?\n\}/)[0].replace("export ", "");
 const editor = source.match(/function fileUrl\(file\) \{[\s\S]*?\n\}/)[0];
 const context = vm.createContext({ URLSearchParams, api: { apiURL: (path) => `/proxy${path}` } });

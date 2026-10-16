@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from qwen_refpack import nodes
-from qwen_refpack.refs import ReferenceError
+from image_refpack import nodes
+from image_refpack.refs import ReferenceError
 
 
 def test_shared_image_loader_order_and_empty_slots(tmp_path, monkeypatch):
@@ -17,7 +17,7 @@ def test_shared_image_loader_order_and_empty_slots(tmp_path, monkeypatch):
         (nested / f"{i}.png").touch()
     monkeypatch.setattr(nodes.media, "load_image", lambda path, **kwargs: path)
     refs = [{"file": f"nested/{i}.png"} for i in range(10)]
-    node = nodes.QwenImageReferencePack()
+    node = nodes.ImageReferencePackBase()
     assert node.RETURN_TYPES == ("IMAGE",) * 10
     assert node.RETURN_NAMES == tuple(f"image_{i}" for i in range(1, 11))
     result = node.build(json.dumps(refs))

@@ -28,7 +28,7 @@ export function createMaskEditorTarget(node, file, image, onSave) {
     const target = Object.create(node);
     // Own fields are essential: never mutate properties or widgets on the source.
     const fields = {
-        id: `qwen-mask-${crypto.randomUUID()}`,
+        id: `image-refpack-mask-${crypto.randomUUID()}`,
         widgets: [widget], properties: {}, imgs: [image], imageIndex: 0,
         images: [{ filename: file.slice(slash + 1), subfolder: slash < 0 ? "" : file.slice(0, slash), type: "input" }],
         previewMediaType: "image",

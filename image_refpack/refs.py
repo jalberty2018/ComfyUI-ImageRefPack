@@ -72,9 +72,9 @@ class ReferenceSet:
     @classmethod
     def from_obj(cls, value: Any, max_images: int = MAX_IMAGES) -> "ReferenceSet":
         raw = value.get("references", []) if isinstance(value, dict) else value
-        if not isinstance(raw, list) or len(raw) > max_images: raise ReferenceError(f"Qwen Image accepts at most {max_images} image references")
+        if not isinstance(raw, list) or len(raw) > max_images: raise ReferenceError(f"Image accepts at most {max_images} image references")
         refs = [Reference.from_dict(item) for item in raw]
-        if any(item.get("kind", "image") != "image" for item in raw): raise ReferenceError("Qwen references must be images")
+        if any(item.get("kind", "image") != "image" for item in raw): raise ReferenceError("Image references must be images")
         return cls(refs)
 
     def to_json(self) -> str:

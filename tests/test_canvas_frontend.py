@@ -1,6 +1,6 @@
 from pathlib import Path
 
-SOURCE = (Path(__file__).parents[1] / "web" / "qwen_image_refpack.js").read_text(encoding="utf-8")
+SOURCE = (Path(__file__).parents[1] / "web" / "image_refpack.js").read_text(encoding="utf-8")
 
 def test_frontend_uses_fixed_image_canvas_and_two_slots():
     assert 'const KINDS = ["image"]' in SOURCE
@@ -31,6 +31,4 @@ def test_frontend_does_not_expose_prompt_video_or_audio_controls():
 def test_current_frontend_registration():
     assert 'tenImages ? "ImageReferenceManagerUpload" : "ImageUploadFirstLastReferencePack"' in SOURCE
     assert 'tenImages ? "ImageReferenceManager" : "ImageLocalInputFirstLastReferencePack"' in SOURCE
-    assert '"QwenImageReferencePack"' not in SOURCE
-    assert '"QwenImageLocalInput10ReferencePack"' not in SOURCE
     assert 'while (this.outputs?.length > names.length)' in SOURCE

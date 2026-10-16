@@ -1,4 +1,4 @@
-"""Qwen Image reference manager: image inputs only, no prompt generation."""
+"""Image reference manager: image inputs only, no prompt generation."""
 from __future__ import annotations
 import hashlib
 import json
@@ -20,7 +20,7 @@ def _signature(reference_set: refs.ReferenceSet, input_dir: str) -> str:
             digest.update(f"{ref.file}:missing".encode())
     return digest.hexdigest()
 
-class QwenImageReferencePack:
+class ImageReferencePackBase:
     """Internal image-loading base; not registered as a selectable ComfyUI node."""
 
     @classmethod
@@ -34,7 +34,7 @@ class QwenImageReferencePack:
     RETURN_TYPES = ("IMAGE",) * 10
     RETURN_NAMES = tuple(f"image_{i}" for i in range(1, 11))
     FUNCTION = "build"
-    CATEGORY = "Qwen Image"
+    CATEGORY = "Image"
 
     @classmethod
     def IS_CHANGED(cls, references_json="", max_reference_edge=DEFAULT_MAX_REFERENCE_EDGE, **kwargs):
@@ -53,7 +53,7 @@ class QwenImageReferencePack:
             outputs[index] = media.load_image(str(refs.reference_path(input_dir, reference.file)), crop=reference.crop, max_edge=max_reference_edge, rotation=reference.rotation, mirror=reference.mirror)
         return tuple(outputs)
 
-class OmnicharImagesReferencesManager(QwenImageReferencePack):
+class OmnicharImagesReferencesManager(ImageReferencePackBase):
     """Nine named slots: removing a reference never moves another role or slot."""
 
     MAX_IMAGES = 9
@@ -111,7 +111,7 @@ class OmnicharLocalInputImagesReferencesManager(OmnicharImagesReferencesManager)
     DESCRIPTION = "Choose nine face, body and clothes references from ComfyUI/input, including subfolders."
 
 
-class ImageUploadFirstLastReferencePack(QwenImageReferencePack):
+class ImageUploadFirstLastReferencePack(ImageReferencePackBase):
     """Fork-specific first/last-frame upload manager."""
 
     MAX_IMAGES = 2
@@ -162,10 +162,10 @@ class ImageLocalInputFirstLastReferencePack(ImageUploadFirstLastReferencePack):
     """Fork-specific first/last-frame manager using ComfyUI/input."""
 
 
-class ImageReferenceManager(QwenImageReferencePack):
+class ImageReferenceManager(ImageReferencePackBase):
     """Carry ten independently sized images over a single connection."""
 
-    RETURN_TYPES = ("QWEN_IMAGE_REFERENCES", "QWEN_IMAGE_MASKS")
+    RETURN_TYPES = ("IMAGE_REFERENCES", "IMAGE_MASKS")
     RETURN_NAMES = ("references", "masks")
     DESCRIPTION = "Manage up to ten local images and masks. Connect the bundles to Reference spitter and Mask splitter."
 
@@ -192,12 +192,12 @@ class ImageReferenceManagerUpload(ImageReferenceManager):
 class ReferenceSpitter:
     @classmethod
     def INPUT_TYPES(cls):
-        return {"required": {"references": ("QWEN_IMAGE_REFERENCES",)}}
+        return {"required": {"references": ("IMAGE_REFERENCES",)}}
 
     RETURN_TYPES = ("IMAGE",) * 10
     RETURN_NAMES = tuple(f"image_{i}" for i in range(1, 11))
     FUNCTION = "split"
-    CATEGORY = "Qwen Image"
+    CATEGORY = "Image"
     DESCRIPTION = "Split Image reference manager's bundle into ten images. Empty slots return None."
 
     def split(self, references):
@@ -209,12 +209,12 @@ class ReferenceSpitter:
 class MaskSplitter:
     @classmethod
     def INPUT_TYPES(cls):
-        return {"required": {"masks": ("QWEN_IMAGE_MASKS",)}}
+        return {"required": {"masks": ("IMAGE_MASKS",)}}
 
     RETURN_TYPES = ("MASK",) * 10
     RETURN_NAMES = tuple(f"mask_{i}" for i in range(1, 11))
     FUNCTION = "split"
-    CATEGORY = "Qwen Image"
+    CATEGORY = "Image"
     DESCRIPTION = "Split the managers' masks bundle into ten masks in image order."
 
     def split(self, masks):

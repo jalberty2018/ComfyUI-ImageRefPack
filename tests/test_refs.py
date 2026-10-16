@@ -1,6 +1,6 @@
 import pytest
 
-from qwen_refpack.refs import MAX_IMAGES, ReferenceError, ReferenceSet, output_names
+from image_refpack.refs import MAX_IMAGES, ReferenceError, ReferenceSet, output_names
 
 
 def test_contract_has_two_image_outputs_only():

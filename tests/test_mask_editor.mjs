@@ -86,7 +86,7 @@ test("missing editor and failed opens are reported without leaving a return node
 });
 
 test("thumbnail save follows its reference after reorder and ignores deleted references", async () => {
-    const managerSource = readFileSync(new URL("../web/qwen_image_refpack.js", import.meta.url), "utf8");
+    const managerSource = readFileSync(new URL("../web/image_refpack.js", import.meta.url), "utf8");
     const handler = managerSource.match(/async function editReferenceMask\(node, index\) \{[\s\S]*?\n\}/)[0];
     let save;
     let synced = 0;

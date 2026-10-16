@@ -1160,7 +1160,7 @@ async function apiUpload(file) {
 // video taken at the in-point (`t=`) so the tile previews the span that will
 // actually be emitted, not frame 0 of the untrimmed file.
 function thumbUrl(file, ref) {
-    let url = `/qwen_image_refpack/thumb?file=${encodeURIComponent(file)}`;
+    let url = `/image_refpack/thumb?file=${encodeURIComponent(file)}`;
     if (ref && Array.isArray(ref.crop)) url += `&crop=${ref.crop.join(",")}`;
     if (ref && Array.isArray(ref.trim)) url += `&t=${ref.trim[0]}`;
     const rotation = normalizeRotation(ref && ref.rotation);
@@ -1589,7 +1589,7 @@ async function editReferenceMask(node, index) {
             renderNodeBody(node);
         });
     } catch (error) {
-        console.error("[QwenImageRefPack] Mask Editor", error);
+        console.error("[ImageRefPack] Mask Editor", error);
         alert(`Could not open/save the mask: ${error.message}`);
     }
 }
@@ -1903,14 +1903,14 @@ function draw(node) {
             }
 
             drawTile(ctx, kind, ref, lines, tx, ty, selected, soundState, badgeH, playState);
-            if (node._qwenMaskSupport && kind === "image" && !ref.missing) {
+            if (node._imageRefMaskSupport && kind === "image" && !ref.missing) {
                 drawMaskChip(ctx, tx + CL.del + 7, ty + 3);
             }
 
             // Hit regions, most specific last — hitTest scans in reverse so the
             // play/delete/soundtrack/edit affordances win over the tile containing them.
             regions.push({ type: "tile", kind, index: i, file: ref.file, x: tx, y: ty, w: CL.tile, h: CL.tile });
-            if (node._qwenMaskSupport && kind === "image" && !ref.missing) {
+            if (node._imageRefMaskSupport && kind === "image" && !ref.missing) {
                 regions.push({ type: "mask", kind, index: i, file: ref.file,
                     x: tx + CL.del + 7, y: ty + 3, w: CL.del, h: CL.del });
             }
@@ -3277,7 +3277,7 @@ async function openLocalInputPicker(node) {
     search.oninput = render;
     status.textContent = "Loading images...";
     try {
-        const response = await api.fetchApi("/qwen_image_refpack/files?kind=image");
+        const response = await api.fetchApi("/image_refpack/files?kind=image");
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         files = (await response.json()).files || [];
         render();
@@ -3293,7 +3293,7 @@ function buildCustomBlock(node) {
 
     const fileInputs = {};
     for (const [kind, label, accept] of KIND_UPLOAD_META) {
-        if (node._qwenLocalInput) {
+        if (node._imageRefLocalInput) {
             fileInputs[kind] = { click: () => openLocalInputPicker(node) };
             continue;
         }
@@ -3354,7 +3354,7 @@ function buildCustomBlock(node) {
 
 function configFilename(name) {
     const safe = (name || "config").replace(/[^A-Za-z0-9 ._-]+/g, "_").trim() || "config";
-    return `qwen-image-refpack-${safe}.json`;
+    return `image-refpack-${safe}.json`;
 }
 
 function buildConfig(node, name) {
@@ -3466,7 +3466,7 @@ async function missingFiles(references) {
     await Promise.all(
         kinds.map(async (kind) => {
             try {
-                const res = await fetch(`/qwen_image_refpack/files?kind=${encodeURIComponent(kind)}`);
+                const res = await fetch(`/image_refpack/files?kind=${encodeURIComponent(kind)}`);
                 if (!res.ok) return;
                 const data = await res.json();
                 for (const f of data.files || []) present.add(f);
@@ -4536,7 +4536,7 @@ function installSizeGuards(node) {
 // ---------------------------------------------------------------------------
 
 app.registerExtension({
-    name: `QwenImageRefPack.RefManager${tenImages ? "10" : ""}`,
+    name: `ImageRefPack.RefManager${tenImages ? "10" : ""}`,
 
     async beforeRegisterNodeDef(nodeType, nodeData) {
         const supportedNames = [NODE_NAME, LOCAL_NODE_NAME];
@@ -4547,8 +4547,8 @@ app.registerExtension({
             origOnNodeCreated?.apply(this, arguments);
             injectStyles();
             const node = this;
-            node._qwenLocalInput = nodeData.name === LOCAL_NODE_NAME;
-            node._qwenMaskSupport = ["ImageReferenceManager", "ImageReferenceManagerUpload"].includes(nodeData.name);
+            node._imageRefLocalInput = nodeData.name === LOCAL_NODE_NAME;
+            node._imageRefMaskSupport = ["ImageReferenceManager", "ImageReferenceManagerUpload"].includes(nodeData.name);
 
             const refsWidget = widgetByName(node, "references_json");
             node._mmrpRefs = parseRefsValue(refsWidget);

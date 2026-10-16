@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
-import { editImageReference } from "./qwen_image_refpack.js";
+import { editImageReference } from "./image_refpack.js";
 
 const ROWS = [
     { label: "Face", slots: ["face", "face_2", "face_3"] },
@@ -34,7 +34,7 @@ function imageUrl(file, reference = {}) {
         if (reference.crop) params.set("crop", reference.crop.join(","));
         if (reference.rotation) params.set("rotate", reference.rotation);
         if (reference.mirror) params.set("mirror", "1");
-        return api.apiURL(`/qwen_image_refpack/thumb?${params}`);
+        return api.apiURL(`/image_refpack/thumb?${params}`);
     }
     const split = file.lastIndexOf("/");
     return api.apiURL(`/view?${new URLSearchParams({
@@ -43,7 +43,7 @@ function imageUrl(file, reference = {}) {
 }
 
 app.registerExtension({
-    name: "QwenImageRefPack.OmnicharReferences",
+    name: "ImageRefPack.OmnicharReferences",
     async beforeRegisterNodeDef(nodeType, nodeData) {
         const localInput = nodeData.name === "OmnicharLocalInputImagesReferencesManager";
         if (!localInput && nodeData.name !== "OmnicharImagesReferencesManager") return;
@@ -160,7 +160,7 @@ app.registerExtension({
                 search.focus();
                 const started = generation;
                 try {
-                    const response = await api.fetchApi("/qwen_image_refpack/files?kind=image");
+                    const response = await api.fetchApi("/image_refpack/files?kind=image");
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const files = (await response.json()).files || [];
                     if (disposed || picker !== overlay || generation !== started) return;

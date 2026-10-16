@@ -1,16 +1,16 @@
 [project]
-name = "comfyui-qwenimagerefpack"
+name = "comfyui-imagerefpack"
 description = "Image and mask reference managers with upload, local input, first/last and Omnichar variants."
 version = "0.1.0"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 
 [project.urls]
-Repository = "https://github.com/Hearmeman24/ComfyUI-QwenImageRefPack"
+Repository = "https://github.com/jalberty2018/ComfyUI-ImageRefPack"
 
 [tool.comfy]
 PublisherId = "hearmeman24"
-DisplayName = "Qwen Image References Manager"
+DisplayName = "Image References Manager"
 Icon = ""
 
 [tool.pytest.ini_options]

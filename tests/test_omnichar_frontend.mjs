@@ -35,7 +35,7 @@ async function setup(localInput = false) {
             apiURL: (path) => `/proxy${path}`,
             fetchApi: (path, options) => new Promise((resolve) => {
                 if (localInput) {
-                    assert.equal(path, "/qwen_image_refpack/files?kind=image");
+                    assert.equal(path, "/image_refpack/files?kind=image");
                     resolve({ ok: true, json: async () => ({ files: ["face.png", "nested/body.png", "clothes.png"] }) });
                     return;
                 }
@@ -76,7 +76,7 @@ for (const local of [false, true]) {
         assert.deepEqual(JSON.parse(state.value).slots.cloths, { file: "clothes.png" });
         node.onConfigure();
         const preview = tiles(root)[4].children[0].children[0].src;
-        assert.match(preview, /qwen_image_refpack\/thumb/);
+        assert.match(preview, /image_refpack\/thumb/);
         assert.match(preview, /rotate=90/);
         assert.match(preview, /mirror=1/);
         tiles(root)[4].children[3].onclick();

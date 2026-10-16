@@ -61,5 +61,5 @@ async def list_files_route(request: web.Request) -> web.Response:
 
 
 if PromptServer is not None:  # pragma: no branch - true in ComfyUI
-    PromptServer.instance.routes.get("/qwen_image_refpack/thumb")(thumb_route)
-    PromptServer.instance.routes.get("/qwen_image_refpack/files")(list_files_route)
+    PromptServer.instance.routes.get("/image_refpack/thumb")(thumb_route)
+    PromptServer.instance.routes.get("/image_refpack/files")(list_files_route)

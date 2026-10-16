@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from qwen_refpack import nodes, scaling
+from image_refpack import nodes, scaling
 
 
 @pytest.mark.parametrize("source,options,expected", [

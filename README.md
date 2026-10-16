@@ -1,4 +1,4 @@
-# Qwen Image References Manager
+# Image References Manager
 
 Image-only reference nodes with crop, rotation, horizontal mirroring and optional
 downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
@@ -16,8 +16,7 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 | Omnichar Images References Manager | `OmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
 | Omnichar Images References Manager (Local Input) | `OmnicharLocalInputImagesReferencesManager` | Same nine named outputs | Local input |
 
-The old ten-output managers (`QwenImageReferencePack` and
-`QwenImageLocalInput10ReferencePack`) have been removed. In existing workflows,
+The old ten-output managers have been removed. In existing workflows,
 replace them with **Image reference manager (Upload)** or **Image reference
 manager (Local)** and connect **Reference spitter** for the ten image outputs.
 
@@ -25,14 +24,16 @@ manager (Local)** and connect **Reference spitter** for the ten image outputs.
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/jalberty2018/ComfyUI-QwenImageRefPack.git
+git clone https://github.com/jalberty2018/ComfyUI-ImageRefPack.git
 ```
 
 Restart ComfyUI and refresh the browser after installing or updating.
+After updating from the previous repository name, recreate the splitter nodes
+and reconnect their inputs in saved workflows if they retain the old bundle types.
 
 ## Use
 
-Find the nodes under **Qwen Image**. Click the add tile to upload images, or to
+Find the nodes under **Image**. Click the add tile to upload images, or to
 browse the ComfyUI server's local `input` directory (including subfolders) in a
 Local Input node. Local selection supports filename filtering and needs no upload.
 Images fill the grid in output order: 5 x 2 for ten images, 2 x 1 for first/last.
@@ -42,7 +43,7 @@ Connect **Image reference manager (Local)** → `references` → **Reference spi
 carry all ten image slots over one connection. The manager uses the local input
 picker and the same editing and downscaling controls as the ten-image manager.
 The splitter preserves image order, individual dimensions and empty slots.
-The bundle uses the custom `QWEN_IMAGE_REFERENCES` type for these two nodes.
+The bundle uses the custom `IMAGE_REFERENCES` type for these two nodes.
 Use **Image reference manager (Upload)** to upload images instead of selecting
 local input files. It has the same bundled `references` output and connects to
 the same **Reference spitter**, with editing and downscaling preserved.
@@ -61,9 +62,9 @@ to the image outputs. Masks use ComfyUI's inverted alpha convention: white is
 masked, black is unmasked. Images without transparency produce an all-black mask
 with the image's dimensions; empty reference slots return `None`. Saved masks
 survive workflow reloads through their image files in ComfyUI/input.
-The masks bundle has type `QWEN_IMAGE_MASKS`.
+The masks bundle has type `IMAGE_MASKS`.
 
-On the Qwen managers, double-click a tile or use its edit control to crop, rotate or mirror it.
+On the image managers, double-click a tile or use its edit control to crop, rotate or mirror it.
 Those managers share the Crop presets: **Free**, **1:1 (Square)**,
 **2:3 (Portrait Photo)**, **3:2 (Photo)**, **3:4 (Portrait Standard)**,
 **4:3 (Standard)**, **9:16 (Portrait Widescreen)**, **16:9 (Widescreen)**,
@@ -93,7 +94,7 @@ These nodes do not generate prompts and have no video or audio support.
 
 ### Omnichar character references
 
-Add **Omnichar Images References Manager** from **Qwen Image**. Its three rows
+Add **Omnichar Images References Manager** from **Image**. Its three rows
 are **Face**, **Body**, and **Clothes**, each with three fixed image slots.
 Click a slot to upload or replace one image, or drop an image onto that slot.
 Use its × button to clear it. Empty slots return `None`; other images never
@@ -103,7 +104,7 @@ Connect the nine outputs to the identically named inputs on Omnichar's
 **Encode Character** node. The Clothes outputs use `cloths`, `cloths_2`,
 and `cloths_3` to match Omnichar's input spelling. `max_reference_edge`
 limits the longest image edge (default 2048; 0 disables downscaling).
-Both Omnichar managers include the same editor as the Qwen managers. Click the
+Both Omnichar managers include the same editor as the image managers. Click the
 **scissors** button at the top left of a loaded image to crop (including aspect-ratio
 presets), rotate or mirror it. **Save** applies the edits to that slot and its preview;
 **Cancel** leaves it unchanged. Edits are preserved in the workflow and applied to
@@ -119,5 +120,5 @@ replaces only that reference; the × button clears it without moving other image
 
 ```bash
 pytest -q --confcutdir=tests
-node --check web/qwen_image_refpack.js
+node --check web/image_refpack.js
 ```

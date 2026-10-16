@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from qwen_refpack import nodes
-from qwen_refpack.refs import ReferenceError
+from image_refpack import nodes
+from image_refpack.refs import ReferenceError
 
 
 @pytest.fixture(params=[nodes.OmnicharImagesReferencesManager, nodes.OmnicharLocalInputImagesReferencesManager])
