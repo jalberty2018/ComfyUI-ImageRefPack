@@ -46,6 +46,8 @@ def test_only_current_node_ids_are_registered():
     expected = {
         "LSImageReferenceManager",
         "LSImageReferenceManagerUpload",
+        "LSImageReferenceManagerDirect",
+        "LSImageReferenceManagerUploadDirect",
         "LSReferenceSpitter",
         "LSMaskSplitter",
         "LSReferenceCombiner",

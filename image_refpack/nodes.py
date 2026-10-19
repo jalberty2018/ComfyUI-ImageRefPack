@@ -189,6 +189,23 @@ class LSImageReferenceManagerUpload(LSImageReferenceManager):
     DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to LS Reference spitter and LS Mask splitter."
 
 
+class LSImageReferenceManagerDirect(LSImageReferenceManager):
+    """Local manager exposing each image and mask as an individual output."""
+
+    RETURN_TYPES = ("IMAGE",) * 10 + ("MASK",) * 10
+    RETURN_NAMES = (tuple(f"image_{i}" for i in range(1, 11))
+                    + tuple(f"mask_{i}" for i in range(1, 11)))
+    DESCRIPTION = "Manage ten local images with ten image outputs and ten matching mask outputs. Empty slots return None."
+
+    def build(self, references_json="", max_reference_edge=DEFAULT_MAX_REFERENCE_EDGE, **kwargs):
+        images, masks = super().build(references_json, max_reference_edge, **kwargs)
+        return images + masks
+
+
+class LSImageReferenceManagerUploadDirect(LSImageReferenceManagerDirect):
+    DESCRIPTION = "Upload and edit ten images with ten image outputs and ten matching mask outputs. Empty slots return None."
+
+
 class LSReferenceCombiner:
     @classmethod
     def INPUT_TYPES(cls):
@@ -258,6 +275,8 @@ class LSMaskSplitter:
 
 
 NODE_CLASS_MAPPINGS = {
+    "LSImageReferenceManagerDirect": LSImageReferenceManagerDirect,
+    "LSImageReferenceManagerUploadDirect": LSImageReferenceManagerUploadDirect,
     "LSReferenceCombiner": LSReferenceCombiner,
     "LSMaskCombiner": LSMaskCombiner,
     "LSMaskSplitter": LSMaskSplitter,
@@ -270,6 +289,8 @@ NODE_CLASS_MAPPINGS = {
     "LSImageLocalInputFirstLastReferencePack": LSImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "LSImageReferenceManagerDirect": "LS Image reference manager (Local Input, 10 Images + 10 Masks)",
+    "LSImageReferenceManagerUploadDirect": "LS Image reference manager (Upload, 10 Images + 10 Masks)",
     "LSReferenceCombiner": "LS Reference combiner",
     "LSMaskCombiner": "LS Mask combiner",
     "LSMaskSplitter": "LS Mask splitter",
