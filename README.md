@@ -11,6 +11,8 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 | LS Image reference manager (Upload) | `LSImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | LS Reference spitter | `LSReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | LS Mask splitter | `LSMaskSplitter` | `mask_1` through `mask_10` | `masks` input |
+| LS Reference combiner | `LSReferenceCombiner` | `references` | `image_1` through `image_10` inputs |
+| LS Mask combiner | `LSMaskCombiner` | `masks` | `mask_1` through `mask_10` inputs |
 | LS Image References Manager (Upload, First/Last) | `LSImageUploadFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Upload |
 | LS Image References Manager (Local Input, First/Last) | `LSImageLocalInputFirstLastReferencePack` | `First image`, `Last image`, `first_width`, `first_height`, `last_width`, `last_height` | Local input |
 | LS Omnichar Images References Manager (Upload) | `LSOmnicharImagesReferencesManager` | `face`, `face_2`, `face_3`, `body`, `body_2`, `body_3`, `cloths`, `cloths_2`, `cloths_3` | Upload |
@@ -51,6 +53,12 @@ local input files. It has the same bundled `references` output and connects to
 the same **LS Reference spitter**, with editing and downscaling preserved.
 
 ### Masks
+
+Use **LS Reference combiner** to bundle ten image inputs into one `references`
+output, or **LS Mask combiner** to bundle ten mask inputs into one `masks` output.
+All inputs are optional. Unconnected slots remain empty without shifting other
+slots. Images and masks retain their original dimensions and batch sizes.
+Connect these bundles to the matching splitters to recover the individual inputs.
 
 Both bundled managers have a **brush icon next to the scissors** on each image
 thumbnail. Click it to open that image in the standard **ComfyUI Mask Editor**.

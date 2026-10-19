@@ -48,6 +48,8 @@ def test_only_current_node_ids_are_registered():
         "LSImageReferenceManagerUpload",
         "LSReferenceSpitter",
         "LSMaskSplitter",
+        "LSReferenceCombiner",
+        "LSMaskCombiner",
         "LSOmnicharImagesReferencesManager",
         "LSOmnicharLocalInputImagesReferencesManager",
         "LSImageUploadFirstLastReferencePack",

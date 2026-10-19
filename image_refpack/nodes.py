@@ -189,6 +189,40 @@ class LSImageReferenceManagerUpload(LSImageReferenceManager):
     DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to LS Reference spitter and LS Mask splitter."
 
 
+class LSReferenceCombiner:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {}, "optional": {
+            f"image_{i}": ("IMAGE",) for i in range(1, 11)
+        }}
+
+    RETURN_TYPES = ("IMAGE_REFERENCES",)
+    RETURN_NAMES = ("references",)
+    FUNCTION = "combine"
+    CATEGORY = "Image"
+    DESCRIPTION = "Combine up to ten images into a references bundle. Empty slots and individual dimensions are preserved."
+
+    def combine(self, **kwargs):
+        return (tuple(kwargs.get(f"image_{i}") for i in range(1, 11)),)
+
+
+class LSMaskCombiner:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {}, "optional": {
+            f"mask_{i}": ("MASK",) for i in range(1, 11)
+        }}
+
+    RETURN_TYPES = ("IMAGE_MASKS",)
+    RETURN_NAMES = ("masks",)
+    FUNCTION = "combine"
+    CATEGORY = "Image"
+    DESCRIPTION = "Combine up to ten masks into a masks bundle. Empty slots and individual dimensions are preserved."
+
+    def combine(self, **kwargs):
+        return (tuple(kwargs.get(f"mask_{i}") for i in range(1, 11)),)
+
+
 class LSReferenceSpitter:
     @classmethod
     def INPUT_TYPES(cls):
@@ -224,6 +258,8 @@ class LSMaskSplitter:
 
 
 NODE_CLASS_MAPPINGS = {
+    "LSReferenceCombiner": LSReferenceCombiner,
+    "LSMaskCombiner": LSMaskCombiner,
     "LSMaskSplitter": LSMaskSplitter,
     "LSImageReferenceManagerUpload": LSImageReferenceManagerUpload,
     "LSImageReferenceManager": LSImageReferenceManager,
@@ -234,6 +270,8 @@ NODE_CLASS_MAPPINGS = {
     "LSImageLocalInputFirstLastReferencePack": LSImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "LSReferenceCombiner": "LS Reference combiner",
+    "LSMaskCombiner": "LS Mask combiner",
     "LSMaskSplitter": "LS Mask splitter",
     "LSImageReferenceManagerUpload": "LS Image reference manager (Upload)",
     "LSImageReferenceManager": "LS Image reference manager (Local)",
