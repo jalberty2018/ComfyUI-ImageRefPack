@@ -102,7 +102,7 @@ test("local picker filters subfolders and assigns only the selected slot", async
     await tiles(root)[7].children[0].onclick();
     body.children.at(-1).children[0].children[3].children[2].onclick();
     assert.deepEqual(Object.keys(JSON.parse(state.value).slots), ["body_2", "cloths_2"]);
-    await tiles(root)[4].children[0].onclick();
+    await tiles(root)[4].children[0].ondblclick({ preventDefault() {}, stopPropagation() {} });
     body.children.at(-1).children[0].children[3].children[0].onclick();
     assert.equal(JSON.parse(state.value).slots.body_2.file, "face.png");
     assert.equal(JSON.parse(state.value).slots.cloths_2.file, "clothes.png");
@@ -138,5 +138,33 @@ test("parallel uploads preserve their roles, removal leaves gaps, workflow resto
     node.onConfigure();
     assert.equal(tiles(root)[1].children[0].children[0].alt, "face_2");
     assert.equal(tiles(root)[7].children[0].children[0].alt, "cloths_2");
+    node.onRemoved();
+});
+
+for (const local of [false, true]) {
+    test(`drag moves occupied slots with transforms (local=${local})`, async () => {
+        const { root, node, state } = await setup(local);
+        const a = { file: "a.png", rotation: 90 };
+        const b = { file: "b.png" };
+        const c = { file: "c.png", mirror: true };
+        state.value = JSON.stringify({ slots: { face: a, face_2: b, face_3: c } });
+        node.onConfigure();
+        const event = { preventDefault() {}, stopPropagation() {}, dataTransfer: { setData() {} } };
+        tiles(root)[0].children[0].ondragstart(event);
+        tiles(root)[2].ondrop(event);
+        assert.deepEqual(JSON.parse(state.value).slots, { face: b, face_2: c, face_3: a });
+        node.onRemoved();
+    });
+}
+
+test("occupied local slot opens replacement picker only on double click", async () => {
+    const { root, node, state, body } = await setup(true);
+    state.value = JSON.stringify({ slots: { face: { file: "old.png", rotation: 90 } } });
+    node.onConfigure();
+    tiles(root)[0].children[0].onclick();
+    assert.equal(body.children.length, 0);
+    await tiles(root)[0].children[0].ondblclick({ preventDefault() {}, stopPropagation() {} });
+    body.children.at(-1).children[0].children[3].children[0].onclick();
+    assert.deepEqual(JSON.parse(state.value).slots.face, { kind: "image", file: "face.png" });
     node.onRemoved();
 });

@@ -69,6 +69,7 @@ app.registerExtension({
             let disposed = false;
             let generation = 0;
             let picker = null;
+            let draggedSlot = null;
             let editor = null;
             const busy = new Set();
             const root = document.createElement("div");
@@ -204,7 +205,19 @@ app.registerExtension({
                         button.type = "button";
                         button.disabled = busy.has(name);
                         button.title = `${slots[name] ? "Replace" : localInput ? "Choose" : "Upload"} ${name}`;
-                        button.onclick = () => choose(name);
+                        button.onclick = () => { if (!slots[name]) return choose(name); };
+                        button.ondblclick = (event) => {
+                            event.preventDefault(); event.stopPropagation();
+                            if (slots[name] && !busy.has(name)) return choose(name);
+                        };
+                        button.draggable = !!slots[name] && !busy.has(name);
+                        button.ondragstart = (event) => {
+                            draggedSlot = { name, reference: slots[name], generation };
+                            event.stopPropagation();
+                            event.dataTransfer.effectAllowed = "move";
+                            event.dataTransfer.setData("text/plain", name);
+                        };
+                        button.ondragend = () => { draggedSlot = null; };
                         if (slots[name] && !busy.has(name)) {
                             const image = document.createElement("img");
                             image.src = imageUrl(slots[name].file, slots[name]);
@@ -240,7 +253,17 @@ app.registerExtension({
                         tile.ondragover = (event) => { event.preventDefault(); event.stopPropagation(); };
                         tile.ondrop = (event) => {
                             event.preventDefault(); event.stopPropagation();
-                            if (!localInput) upload(name, event.dataTransfer.files?.[0]);
+                            if (draggedSlot) {
+                                const source = draggedSlot;
+                                draggedSlot = null;
+                                if (source.generation !== generation || slots[source.name] !== source.reference || busy.has(name) || busy.has(source.name)) return;
+                                const from = SLOT_NAMES.indexOf(source.name);
+                                const to = SLOT_NAMES.indexOf(name);
+                                const ordered = SLOT_NAMES.map((slot) => slots[slot]);
+                                ordered.splice(to, 0, ordered.splice(from, 1)[0]);
+                                slots = Object.fromEntries(SLOT_NAMES.flatMap((slot, index) => ordered[index] ? [[slot, ordered[index]]] : []));
+                                commit();
+                            } else if (!localInput) upload(name, event.dataTransfer.files?.[0]);
                         };
                         grid.appendChild(tile);
                     }

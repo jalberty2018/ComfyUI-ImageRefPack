@@ -1145,11 +1145,11 @@ function cloneRefs(refs) {
 // API helpers
 // ---------------------------------------------------------------------------
 
-async function apiUpload(file) {
+async function apiUpload(file, overwrite = true) {
     const form = new FormData();
     form.append("image", file);
     form.append("type", "input");
-    form.append("overwrite", "true");
+    form.append("overwrite", String(overwrite));
     const res = await fetch("/upload/image", { method: "POST", body: form });
     if (!res.ok) throw new Error(`upload failed: ${res.status}`);
     const info = await res.json();
@@ -2039,15 +2039,78 @@ function onCanvasMouseDown(node, e) {
     }
 }
 
-// Double-clicking a tile opens the crop/trim editor too — same modal as the chip.
-// The affordance chips keep their own single-click meanings.
+// Replace only the chosen reference; cancelling leaves the original intact.
+function replaceReference(node, original, file) {
+    const index = node._mmrpRefs.images.indexOf(original);
+    if (index < 0 || !node.graph) return;
+    const next = cloneRefs(node._mmrpRefs);
+    next.images[index] = { file };
+    node._mmrpSelected = { kind: "image", index };
+    applyRefs(node, next);
+}
+
 function onCanvasDblClick(node, e) {
     const pos = getMousePos(node._mmrpBody.canvas, e);
     const hit = hitTest(node, pos.x, pos.y);
-    if (!hit || (hit.type !== "tile" && hit.type !== "edit")) return;
-    const ref = node._mmrpRefs[`${hit.kind}s`][hit.index];
-    if (!ref || ref.missing) return;
-    openEditModal(node, hit.kind, hit.index);
+    if (hit?.type !== "tile" || hit.kind !== "image") return;
+    e.preventDefault();
+    e.stopPropagation();
+    const original = node._mmrpRefs.images[hit.index];
+    if (!original) return;
+    if (node._imageRefLocalInput) return openLocalInputPicker(node, original);
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+            const name = await apiUpload(file, false);
+            replaceReference(node, original, name);
+        } catch (error) {
+            alert(`Upload failed: ${error.message}`);
+        }
+    };
+    input.click();
+}
+
+function installCanvasReordering(node, canvas) {
+    let drag = null;
+    canvas.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        event.stopPropagation();
+        const pos = getMousePos(canvas, event);
+        const hit = hitTest(node, pos.x, pos.y);
+        if (hit?.type !== "tile") return;
+        drag = { hit, x: event.clientX, y: event.clientY, refs: node._mmrpRefs };
+        canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener("pointermove", (event) => {
+        if (drag && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) > 5) {
+            drag.moved = true;
+            canvas.style.cursor = "grabbing";
+        }
+    });
+    const finish = (event) => {
+        const current = drag;
+        drag = null;
+        canvas.style.cursor = "";
+        if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+        if (event.type !== "pointerup" || !current?.moved || current.refs !== node._mmrpRefs) return;
+        const pos = getMousePos(canvas, event);
+        const target = hitTest(node, pos.x, pos.y);
+        const source = current.hit;
+        if (!target || target.kind !== source.kind || !Number.isInteger(target.index) || target.index === source.index) return;
+        const next = cloneRefs(node._mmrpRefs);
+        const items = next[`${source.kind}s`];
+        if (!items[target.index]) return;
+        items.splice(target.index, 0, items.splice(source.index, 1)[0]);
+        node._mmrpSelected = { kind: source.kind, index: target.index };
+        applyRefs(node, next);
+    };
+    canvas.addEventListener("pointerup", finish);
+    canvas.addEventListener("pointercancel", finish);
+    canvas.addEventListener("lostpointercapture", () => { drag = null; canvas.style.cursor = ""; });
 }
 
 function toggleSoundtrack(node, file) {
@@ -3227,7 +3290,7 @@ const KIND_UPLOAD_META = [
     ["image", "Image", "image/*"],
 ];
 
-async function openLocalInputPicker(node) {
+async function openLocalInputPicker(node, original = null) {
     const overlay = document.createElement("div");
     overlay.className = "mmrp-overlay";
     overlay.onclick = (event) => { if (event.target === overlay) overlay.remove(); };
@@ -3262,8 +3325,13 @@ async function openLocalInputPicker(node) {
             const button = document.createElement("button");
             button.className = "mmrp-btn";
             button.textContent = file;
-            button.disabled = refs.length >= CAPS.image || refs.some((ref) => ref.file === file);
+            button.disabled = (!original && refs.length >= CAPS.image) || refs.some((ref) => ref !== original && ref.file === file);
             button.onclick = () => {
+                if (original) {
+                    replaceReference(node, original, file);
+                    overlay.remove();
+                    return;
+                }
                 const next = cloneRefs(node._mmrpRefs);
                 if (next.images.length >= CAPS.image) return;
                 next.images.push({ file });
@@ -3312,12 +3380,13 @@ function buildCustomBlock(node) {
 
     const canvas = document.createElement("canvas");
     canvas.className = "mmrp-canvas";
+    installCanvasReordering(node, canvas);
     canvas.style.height = `${CANVAS_ROWS.height}px`; // fixed, set once
     canvas.addEventListener("mousedown", (e) => onCanvasMouseDown(node, e));
     canvas.addEventListener("mousemove", (e) => {
         const pos = getMousePos(canvas, e);
         const hit = hitTest(node, pos.x, pos.y);
-        canvas.title = hit?.type === "mask" ? "Open in ComfyUI Mask Editor" : "";
+        canvas.title = hit?.type === "mask" ? "Open in ComfyUI Mask Editor" : hit?.type === "tile" ? "Double-click to replace; drag to reorder" : "";
     });
     canvas.addEventListener("dblclick", (e) => onCanvasDblClick(node, e));
     // Keep litegraph's node context menu off the tiles (matches the reference's
