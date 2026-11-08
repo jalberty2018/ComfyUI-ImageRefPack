@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from . import media, refs, scaling
+from .resolution import LSResolutionSelector
 
 DEFAULT_MAX_REFERENCE_EDGE = 2048
 
@@ -275,6 +276,7 @@ class LSMaskSplitter:
 
 
 NODE_CLASS_MAPPINGS = {
+    "LSResolutionSelector": LSResolutionSelector,
     "LSImageReferenceManagerDirect": LSImageReferenceManagerDirect,
     "LSImageReferenceManagerUploadDirect": LSImageReferenceManagerUploadDirect,
     "LSReferenceCombiner": LSReferenceCombiner,
@@ -289,6 +291,7 @@ NODE_CLASS_MAPPINGS = {
     "LSImageLocalInputFirstLastReferencePack": LSImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "LSResolutionSelector": "LS Resolution Selector",
     "LSImageReferenceManagerDirect": "LS Image reference manager (Local Input, 10 Images + 10 Masks)",
     "LSImageReferenceManagerUploadDirect": "LS Image reference manager (Upload, 10 Images + 10 Masks)",
     "LSReferenceCombiner": "LS Reference combiner",

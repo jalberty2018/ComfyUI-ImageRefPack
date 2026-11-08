@@ -11,6 +11,7 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 | LS Image reference manager (Upload) | `LSImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | LS Image reference manager (Local Input, 10 Images + 10 Masks) | `LSImageReferenceManagerDirect` | `image_1`–`image_10`, `mask_1`–`mask_10` | Local input |
 | LS Image reference manager (Upload, 10 Images + 10 Masks) | `LSImageReferenceManagerUploadDirect` | `image_1`–`image_10`, `mask_1`–`mask_10` | Upload |
+| LS Resolution Selector | `LSResolutionSelector` | `width`, `height` | Optional `image` input |
 | LS Reference spitter | `LSReferenceSpitter` | `image_1` through `image_10` | `references` input |
 | LS Mask splitter | `LSMaskSplitter` | `mask_1` through `mask_10` | `masks` input |
 | LS Reference combiner | `LSReferenceCombiner` | `references` | `image_1` through `image_10` inputs |
@@ -139,3 +140,16 @@ replaces only that reference; the × button clears it without moving other image
 pytest -q --confcutdir=tests
 node --check web/image_refpack.js
 ```
+
+## Resolution selector
+
+**LS Resolution Selector** (`LSResolutionSelector`, under **Image**) uses the
+native ComfyUI Resolution Selector for aspect ratio, megapixels and multiple.
+The **Use original image resolution** switch appears first. When enabled,
+only `multiple` remains visible below the switch: the input image dimensions
+are rounded to its nearest multiple, with a minimum of one multiple per axis.
+An image is required in this mode; otherwise the image input is optional.
+The resulting width and height are displayed below the controls after execution.
+The node only calculates dimensions; it does not resize the supplied image.
+
+This node has its own LS ID and does not require ComfyUI-P-H3-Image-Tools.
