@@ -44,6 +44,8 @@ def test_manager_and_first_last_contracts():
 
 def test_only_current_node_ids_are_registered():
     expected = {
+        "LSImageReferenceManagerLocalInputScaled",
+        "LSImageReferenceManagerUploadScaled",
         "LSResolutionSelector",
         "LSImageReferenceManager",
         "LSImageReferenceManagerUpload",

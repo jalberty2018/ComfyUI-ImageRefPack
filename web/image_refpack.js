@@ -4609,7 +4609,7 @@ app.registerExtension({
 
     async beforeRegisterNodeDef(nodeType, nodeData) {
         const supportedNames = [NODE_NAME, LOCAL_NODE_NAME];
-        if (tenImages) supportedNames.push("LSImageReferenceManagerDirect", "LSImageReferenceManagerUploadDirect");
+        if (tenImages) supportedNames.push("LSImageReferenceManagerDirect", "LSImageReferenceManagerUploadDirect", "LSImageReferenceManagerUploadScaled", "LSImageReferenceManagerLocalInputScaled");
         if (!supportedNames.includes(nodeData.name)) return;
 
         const origOnNodeCreated = nodeType.prototype.onNodeCreated;
@@ -4617,7 +4617,7 @@ app.registerExtension({
             origOnNodeCreated?.apply(this, arguments);
             injectStyles();
             const node = this;
-            node._imageRefLocalInput = nodeData.name === LOCAL_NODE_NAME || nodeData.name === "LSImageReferenceManagerDirect";
+            node._imageRefLocalInput = nodeData.name === LOCAL_NODE_NAME || nodeData.name === "LSImageReferenceManagerDirect" || nodeData.name === "LSImageReferenceManagerLocalInputScaled";
             node._imageRefMaskSupport = tenImages;
 
             const refsWidget = widgetByName(node, "references_json");

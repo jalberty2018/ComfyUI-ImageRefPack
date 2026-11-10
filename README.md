@@ -89,6 +89,12 @@ Those managers share the Crop presets: **Free**, **1:1 (Square)**,
 and **21:9 (Ultrawide)**. Free releases the aspect lock for manual cropping.
 The ten-image nodes retain `max_reference_edge` (0 disables downscaling).
 
+### Scaled reference bundles
+
+`LS Image reference manager (Upload, Scaled)` (`LSImageReferenceManagerUploadScaled`) provides the same ten-slot `references` and `masks` bundles as the upload manager, with all the First/Last scaling controls below. Each image is scaled independently; its mask follows the same resize, crop and padding. Empty slots stay empty. Both width and height override megapixels for every reference when set above zero.
+
+`LS Image reference manager (Local Input, Scaled)` (`LSImageReferenceManagerLocalInputScaled`) offers the same scaling and bundles, selecting existing images from `ComfyUI/input`, including subfolders.
+
 ### First/Last scaling
 
 Both First/Last variants use the calculations from

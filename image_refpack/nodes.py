@@ -112,12 +112,8 @@ class LSOmnicharLocalInputImagesReferencesManager(LSOmnicharImagesReferencesMana
     DESCRIPTION = "Choose nine face, body and clothes references from ComfyUI/input, including subfolders."
 
 
-class LSImageUploadFirstLastReferencePack(ImageReferencePackBase):
-    """Fork-specific first/last-frame upload manager."""
-
-    MAX_IMAGES = 2
-    RETURN_TYPES = ("IMAGE", "IMAGE", "INT", "INT", "INT", "INT")
-    RETURN_NAMES = ("First image", "Last image", "first_width", "first_height", "last_width", "last_height")
+class ReferenceScalingMixin:
+    """Shared resize controls and cache signature for reference managers."""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -131,9 +127,9 @@ class LSImageUploadFirstLastReferencePack(ImageReferencePackBase):
             "resize_mode": (scaling.RESIZE_MODES, {"default": "crop"}),
             "upscale_method": (scaling.UPSCALE_METHODS, {"default": "lanczos"}),
             "width": ("INT", {"default": 0, "min": 0, "max": 16384,
-                "tooltip": "Set both width and height above 0 to override megapixels for both images."}),
+                "tooltip": "Set both width and height above 0 to override megapixels for every image."}),
             "height": ("INT", {"default": 0, "min": 0, "max": 16384,
-                "tooltip": "Set both width and height above 0 to override megapixels for both images."}),
+                "tooltip": "Set both width and height above 0 to override megapixels for every image."}),
         })
         return inputs
 
@@ -142,6 +138,14 @@ class LSImageUploadFirstLastReferencePack(ImageReferencePackBase):
                    resize_mode="crop", upscale_method="lanczos", width=0, height=0, **kwargs):
         signature = super().IS_CHANGED(references_json, max_reference_edge=0)
         return signature + repr((megapixels, multiple_of, resize_mode, upscale_method, width, height))
+
+
+class LSImageUploadFirstLastReferencePack(ReferenceScalingMixin, ImageReferencePackBase):
+    """Fork-specific first/last-frame upload manager."""
+
+    MAX_IMAGES = 2
+    RETURN_TYPES = ("IMAGE", "IMAGE", "INT", "INT", "INT", "INT")
+    RETURN_NAMES = ("First image", "Last image", "first_width", "first_height", "last_width", "last_height")
 
     def build(self, references_json="", megapixels=1.05, multiple_of=16,
               resize_mode="crop", upscale_method="lanczos", width=0, height=0, **kwargs):
@@ -188,6 +192,35 @@ class LSImageReferenceManagerUpload(LSImageReferenceManager):
     """Upload variant of the single-output reference manager."""
 
     DESCRIPTION = "Upload up to ten images and edit masks. Connect the bundles to LS Reference spitter and LS Mask splitter."
+
+
+class LSImageReferenceManagerUploadScaled(ReferenceScalingMixin, LSImageReferenceManagerUpload):
+    """Upload ten references with matching, independently resized masks."""
+
+    DESCRIPTION = "Upload up to ten images and masks with megapixel or explicit-size scaling. Connect references and masks to the matching splitters."
+
+    def build(self, references_json="", megapixels=1.05, multiple_of=16,
+              resize_mode="crop", upscale_method="lanczos", width=0, height=0, **kwargs):
+        images, masks = super().build(references_json, max_reference_edge=0)
+        scaled_images, scaled_masks = [], []
+        for image, mask in zip(images, masks):
+            if image is None:
+                scaled_images.append(None)
+                scaled_masks.append(None)
+                continue
+            options = (megapixels, multiple_of, resize_mode, upscale_method, width, height)
+            image, _, _ = scaling.scale_image(image, *options)
+            # RGB also supports ComfyUI's PIL-backed Lanczos implementation.
+            mask, _, _ = scaling.scale_image(mask.unsqueeze(-1).repeat(1, 1, 1, 3), *options)
+            scaled_images.append(image)
+            scaled_masks.append(mask[..., 0])
+        return tuple(scaled_images), tuple(scaled_masks)
+
+
+class LSImageReferenceManagerLocalInputScaled(LSImageReferenceManagerUploadScaled):
+    """Scaled reference bundles selected from ComfyUI/input."""
+
+    DESCRIPTION = "Choose up to ten images from ComfyUI/input, including subfolders, and edit masks with megapixel or explicit-size scaling. Connect references and masks to the matching splitters."
 
 
 class LSImageReferenceManagerDirect(LSImageReferenceManager):
@@ -276,6 +309,8 @@ class LSMaskSplitter:
 
 
 NODE_CLASS_MAPPINGS = {
+    "LSImageReferenceManagerLocalInputScaled": LSImageReferenceManagerLocalInputScaled,
+    "LSImageReferenceManagerUploadScaled": LSImageReferenceManagerUploadScaled,
     "LSResolutionSelector": LSResolutionSelector,
     "LSImageReferenceManagerDirect": LSImageReferenceManagerDirect,
     "LSImageReferenceManagerUploadDirect": LSImageReferenceManagerUploadDirect,
@@ -291,6 +326,8 @@ NODE_CLASS_MAPPINGS = {
     "LSImageLocalInputFirstLastReferencePack": LSImageLocalInputFirstLastReferencePack,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "LSImageReferenceManagerLocalInputScaled": "LS Image reference manager (Local Input, Scaled)",
+    "LSImageReferenceManagerUploadScaled": "LS Image reference manager (Upload, Scaled)",
     "LSResolutionSelector": "LS Resolution Selector",
     "LSImageReferenceManagerDirect": "LS Image reference manager (Local Input, 10 Images + 10 Masks)",
     "LSImageReferenceManagerUploadDirect": "LS Image reference manager (Upload, 10 Images + 10 Masks)",

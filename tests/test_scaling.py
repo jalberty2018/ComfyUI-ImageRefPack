@@ -53,3 +53,42 @@ def test_first_last_scaling_and_dimensions(node_class, tmp_path, monkeypatch):
     for setting in ({"megapixels": 2}, {"multiple_of": 32}, {"resize_mode": "pad"},
                     {"upscale_method": "area"}, {"width": 640}, {"height": 480}):
         assert node.IS_CHANGED(references) != node.IS_CHANGED(references, **setting)
+
+
+@pytest.mark.parametrize("node_class", [nodes.LSImageReferenceManagerUploadScaled, nodes.LSImageReferenceManagerLocalInputScaled])
+def test_scaled_bundle_schema_cache_and_empty_slots(tmp_path, monkeypatch, node_class):
+    monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
+    node = node_class()
+    assert node.RETURN_TYPES == ("IMAGE_REFERENCES", "IMAGE_MASKS")
+    assert node.INPUT_TYPES() == nodes.LSImageUploadFirstLastReferencePack.INPUT_TYPES()
+    assert node.build() == ((None,) * 10, (None,) * 10)
+    for setting in ({"megapixels": 2}, {"multiple_of": 32}, {"resize_mode": "pad"},
+                    {"upscale_method": "area"}, {"width": 640}, {"height": 480}):
+        assert node.IS_CHANGED() != node.IS_CHANGED(**setting)
+
+
+@pytest.mark.parametrize("resize_mode", scaling.RESIZE_MODES)
+@pytest.mark.parametrize("method", ["nearest-exact", "bilinear", "area", "bicubic"])
+@pytest.mark.parametrize("node_class", [nodes.LSImageReferenceManagerUploadScaled, nodes.LSImageReferenceManagerLocalInputScaled])
+def test_scaled_bundle_mask_alignment(tmp_path, monkeypatch, resize_mode, method, node_class):
+    torch = pytest.importorskip("torch")
+    monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
+    for name in ("a.png", "b.png"):
+        (tmp_path / name).touch()
+    def load(path, **options):
+        assert options["max_edge"] == 0
+        h, w = (8, 12) if path.endswith("a.png") else (12, 8)
+        mask = torch.zeros(1, h, w)
+        mask[:, :h // 2, :w // 2] = 1
+        return mask
+    monkeypatch.setattr(nodes.media, "load_mask", load)
+    monkeypatch.setattr(nodes.media, "load_image", lambda path, **kw: load(path, **kw).unsqueeze(-1).repeat(1, 1, 1, 3))
+    images, masks = node_class().build(
+        json.dumps([{"file": "a.png"}, {"file": "b.png"}]),
+        multiple_of=1, width=10, height=10, resize_mode=resize_mode, upscale_method=method)
+    for image, mask in zip(images[:2], masks[:2]):
+        assert image.shape == (1, 10, 10, 3)
+        assert mask.shape == (1, 10, 10)
+        assert torch.allclose(image[..., 0], mask)
+    assert nodes.LSReferenceSpitter().split(images)[2:] == (None,) * 8
+    assert nodes.LSMaskSplitter().split(masks)[2:] == (None,) * 8
