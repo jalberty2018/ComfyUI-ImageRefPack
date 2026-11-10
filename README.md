@@ -91,9 +91,9 @@ The ten-image nodes retain `max_reference_edge` (0 disables downscaling).
 
 ### Scaled reference bundles
 
-`LS Image reference manager (Upload, Scaled)` (`LSImageReferenceManagerUploadScaled`) provides the same ten-slot `references` and `masks` bundles as the upload manager, with all the First/Last scaling controls below. Each image is scaled independently; its mask follows the same resize, crop and padding. Empty slots stay empty. Both width and height override megapixels for every reference when set above zero.
+`LS Image reference manager (Upload, Scaled)` (`LSImageReferenceManagerUploadScaled`) and `LS Image reference manager (Local Input, Scaled)` (`LSImageReferenceManagerLocalInputScaled`) provide ten-slot `references`, `masks`, and `references_vlm` bundles. The local variant selects existing images from `ComfyUI/input`, including subfolders.
 
-`LS Image reference manager (Local Input, Scaled)` (`LSImageReferenceManagerLocalInputScaled`) offers the same scaling and bundles, selecting existing images from `ComfyUI/input`, including subfolders.
+`megapixels` controls references and their matching masks; `megapixels_vlm` independently controls VLM references (default 1.05). Both image bundles are scaled directly from the source after editor transforms, using the shared `multiple_of`, `resize_mode`, and `upscale_method` controls described below. Empty slots stay empty. Connect either reference bundle to LS Reference spitter. These two nodes do not expose width or height overrides.
 
 ### First/Last scaling
 

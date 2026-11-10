@@ -197,30 +197,53 @@ class LSImageReferenceManagerUpload(LSImageReferenceManager):
 class LSImageReferenceManagerUploadScaled(ReferenceScalingMixin, LSImageReferenceManagerUpload):
     """Upload ten references with matching, independently resized masks."""
 
-    DESCRIPTION = "Upload up to ten images and masks with megapixel or explicit-size scaling. Connect references and masks to the matching splitters."
+    RETURN_TYPES = ("IMAGE_REFERENCES", "IMAGE_MASKS", "IMAGE_REFERENCES")
+    RETURN_NAMES = ("references", "masks", "references_vlm")
+    DESCRIPTION = "Upload up to ten images with matching masks and a separate megapixel-scaled VLM reference bundle."
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        inputs = super().INPUT_TYPES()
+        inputs["optional"].pop("width")
+        inputs["optional"].pop("height")
+        inputs["optional"]["megapixels_vlm"] = ("FLOAT", {
+            "default": 1.05, "min": 0.0, "max": 16.0, "step": 0.01,
+            "tooltip": "Target megapixels per VLM reference. 0 keeps source pixel count before multiple_of rounding.",
+        })
+        return inputs
+
+    @classmethod
+    def IS_CHANGED(cls, references_json="", megapixels=1.05, multiple_of=16,
+                   resize_mode="crop", upscale_method="lanczos", megapixels_vlm=1.05, **kwargs):
+        return super().IS_CHANGED(references_json, megapixels, multiple_of,
+                                  resize_mode, upscale_method) + repr((megapixels_vlm,))
 
     def build(self, references_json="", megapixels=1.05, multiple_of=16,
-              resize_mode="crop", upscale_method="lanczos", width=0, height=0, **kwargs):
+              resize_mode="crop", upscale_method="lanczos", megapixels_vlm=1.05, **kwargs):
         images, masks = super().build(references_json, max_reference_edge=0)
-        scaled_images, scaled_masks = [], []
+        scaled_images, scaled_masks, vlm_images = [], [], []
         for image, mask in zip(images, masks):
             if image is None:
                 scaled_images.append(None)
                 scaled_masks.append(None)
+                vlm_images.append(None)
                 continue
-            options = (megapixels, multiple_of, resize_mode, upscale_method, width, height)
+            options = (megapixels, multiple_of, resize_mode, upscale_method)
+            vlm_image, _, _ = scaling.scale_image(
+                image, megapixels_vlm, multiple_of, resize_mode, upscale_method)
             image, _, _ = scaling.scale_image(image, *options)
             # RGB also supports ComfyUI's PIL-backed Lanczos implementation.
             mask, _, _ = scaling.scale_image(mask.unsqueeze(-1).repeat(1, 1, 1, 3), *options)
             scaled_images.append(image)
             scaled_masks.append(mask[..., 0])
-        return tuple(scaled_images), tuple(scaled_masks)
+            vlm_images.append(vlm_image)
+        return tuple(scaled_images), tuple(scaled_masks), tuple(vlm_images)
 
 
 class LSImageReferenceManagerLocalInputScaled(LSImageReferenceManagerUploadScaled):
     """Scaled reference bundles selected from ComfyUI/input."""
 
-    DESCRIPTION = "Choose up to ten images from ComfyUI/input, including subfolders, and edit masks with megapixel or explicit-size scaling. Connect references and masks to the matching splitters."
+    DESCRIPTION = "Choose up to ten images from ComfyUI/input, including subfolders, with matching masks and a separate megapixel-scaled VLM reference bundle."
 
 
 class LSImageReferenceManagerDirect(LSImageReferenceManager):

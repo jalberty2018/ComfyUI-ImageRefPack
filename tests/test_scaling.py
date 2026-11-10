@@ -59,11 +59,12 @@ def test_first_last_scaling_and_dimensions(node_class, tmp_path, monkeypatch):
 def test_scaled_bundle_schema_cache_and_empty_slots(tmp_path, monkeypatch, node_class):
     monkeypatch.setitem(sys.modules, "folder_paths", SimpleNamespace(get_input_directory=lambda: str(tmp_path)))
     node = node_class()
-    assert node.RETURN_TYPES == ("IMAGE_REFERENCES", "IMAGE_MASKS")
-    assert node.INPUT_TYPES() == nodes.LSImageUploadFirstLastReferencePack.INPUT_TYPES()
-    assert node.build() == ((None,) * 10, (None,) * 10)
+    assert node.RETURN_TYPES == ("IMAGE_REFERENCES", "IMAGE_MASKS", "IMAGE_REFERENCES")
+    assert node.RETURN_NAMES == ("references", "masks", "references_vlm")
+    assert set(node.INPUT_TYPES()["optional"]) == {"references_json", "megapixels", "multiple_of", "resize_mode", "upscale_method", "megapixels_vlm"}
+    assert node.build() == ((None,) * 10,) * 3
     for setting in ({"megapixels": 2}, {"multiple_of": 32}, {"resize_mode": "pad"},
-                    {"upscale_method": "area"}, {"width": 640}, {"height": 480}):
+                    {"upscale_method": "area"}, {"megapixels_vlm": 0.5}):
         assert node.IS_CHANGED() != node.IS_CHANGED(**setting)
 
 
@@ -83,12 +84,16 @@ def test_scaled_bundle_mask_alignment(tmp_path, monkeypatch, resize_mode, method
         return mask
     monkeypatch.setattr(nodes.media, "load_mask", load)
     monkeypatch.setattr(nodes.media, "load_image", lambda path, **kw: load(path, **kw).unsqueeze(-1).repeat(1, 1, 1, 3))
-    images, masks = node_class().build(
+    images, masks, vlm = node_class().build(
         json.dumps([{"file": "a.png"}, {"file": "b.png"}]),
-        multiple_of=1, width=10, height=10, resize_mode=resize_mode, upscale_method=method)
+        multiple_of=1, megapixels=0.0001, megapixels_vlm=0.0004, resize_mode=resize_mode, upscale_method=method)
     for image, mask in zip(images[:2], masks[:2]):
-        assert image.shape == (1, 10, 10, 3)
-        assert mask.shape == (1, 10, 10)
+        assert image.shape[1:3] in ((8, 12), (12, 8))
+        assert mask.shape == image.shape[:3]
         assert torch.allclose(image[..., 0], mask)
     assert nodes.LSReferenceSpitter().split(images)[2:] == (None,) * 8
     assert nodes.LSMaskSplitter().split(masks)[2:] == (None,) * 8
+
+    assert vlm[0].shape == (1, 16, 24, 3)
+    assert vlm[1].shape == (1, 24, 16, 3)
+    assert vlm[2:] == (None,) * 8

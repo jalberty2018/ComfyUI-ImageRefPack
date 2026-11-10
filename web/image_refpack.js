@@ -4643,6 +4643,12 @@ app.registerExtension({
             const origOnConfigure = node.onConfigure;
             node.onConfigure = function (info) {
                 const out = origOnConfigure ? origOnConfigure.apply(this, arguments) : undefined;
+                // Earlier Scaled workflows stored width and height after upscale_method.
+                // Keep the preceding controls and initialize the new VLM target.
+                if (nodeData.name.endsWith("Scaled") && info?.widgets_values?.length === 7) {
+                    const vlm = widgetByName(this, "megapixels_vlm");
+                    if (vlm) vlm.value = 1.05;
+                }
                 const rw = widgetByName(this, "references_json");
                 stopPreview(this);
                 this._mmrpRefs = parseRefsValue(rw);
