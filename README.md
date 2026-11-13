@@ -154,7 +154,10 @@ native ComfyUI Resolution Selector for aspect ratio, megapixels and multiple.
 The **Use original image resolution** switch appears first. When enabled,
 only `multiple` remains visible below the switch: the input image dimensions
 are rounded to its nearest multiple, with a minimum of one multiple per axis.
-An image is required in this mode; otherwise the image input is optional.
+The aspect ratio list also offers **Use original aspect ratio**, which uses the
+connected image's proportions and scales to the selected `megapixels`, rounding
+both dimensions to `multiple`. Rounding can slightly change the final ratio.
+An image is required for either original-image mode; otherwise it is optional.
 The resulting width and height are displayed below the controls after execution.
 The node only calculates dimensions; it does not resize the supplied image.
 

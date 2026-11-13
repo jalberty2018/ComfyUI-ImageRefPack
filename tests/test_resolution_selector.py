@@ -1,6 +1,7 @@
 import sys
 import types
 import unittest
+from enum import Enum
 from unittest.mock import Mock, patch
 
 from image_refpack.resolution import LSResolutionSelector
@@ -17,6 +18,37 @@ class ResolutionSelectorTests(unittest.TestCase):
         context = patch.dict(sys.modules, {"torch": types.SimpleNamespace(Tensor=Tensor)})
         context.start()
         self.addCleanup(context.stop)
+
+    def test_original_aspect_ratio_is_available(self):
+        class AspectRatio(Enum):
+            SQUARE = "1:1 (Square)"
+        native = types.SimpleNamespace(AspectRatio=AspectRatio)
+        with patch.dict(sys.modules, {"comfy_extras.nodes_resolution": native}):
+            choices, options = LSResolutionSelector.INPUT_TYPES()["required"]["aspect_ratio"]
+        self.assertIn("Use original aspect ratio", choices)
+        self.assertEqual(options["default"], "1:1 (Square)")
+
+    def test_original_aspect_ratio_scales_to_megapixels(self):
+        node = LSResolutionSelector()
+        for shape, expected in [
+            ((1, 500, 1000, 3), (2000, 1000)),
+            ((3, 1000, 500, 3), (1000, 2000)),
+            ((1, 500, 500, 3), (1416, 1416)),
+        ]:
+            with self.subTest(shape=shape):
+                result = node.select(node.ORIGINAL_ASPECT_RATIO, 2.0, 8, image=Tensor(shape))
+                self.assertEqual(result["result"], expected)
+                self.assertEqual(result["ui"], {"width": [expected[0]], "height": [expected[1]]})
+        self.assertEqual(node.select(node.ORIGINAL_ASPECT_RATIO, 2.0, 32,
+            image=Tensor((1, 500, 1000, 3)))["result"], (1984, 992))
+        self.assertEqual(node.select(node.ORIGINAL_ASPECT_RATIO, 2.0, 8, True,
+            Tensor((1, 500, 1000, 3)))["result"], (1000, 496))
+
+    def test_original_aspect_ratio_requires_image(self):
+        node = LSResolutionSelector()
+        for image in (None, "bad", Tensor((0, 500, 1000, 3)), Tensor((1, 0, 1000, 3)), Tensor((500, 1000, 3))):
+            with self.subTest(image=image), self.assertRaisesRegex(ValueError, "Use original aspect ratio requires"):
+                node.select(node.ORIGINAL_ASPECT_RATIO, 1.0, 8, image=image)
 
     def test_resolution_selector_original_dimensions(self):
         node = LSResolutionSelector()
