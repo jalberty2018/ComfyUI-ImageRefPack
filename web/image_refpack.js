@@ -852,7 +852,7 @@ function fixedSize(node) {
 
 // ---------------------------------------------------------------------------
 // The tag rule. Mirrors minimax_refpack/refs.py ReferenceSet.assign_tags() exactly:
-//   1. images, slot order -> <Picture 1..n>
+//   1. images, slot order -> <Image 1..n>
 //   2. per video, slot order: soundtrack's <Audio j> is assigned BEFORE the video's own
 //      <Video k>; standalone audio continues the same <Audio> counter afterwards
 // `refs` is {images: [{file}], videos: [{file, use_soundtrack}], audios: [{file}]} — the
@@ -864,7 +864,7 @@ function assignTags(refs) {
     const audios = (refs && refs.audios) || [];
     const tagged = { images: [], videos: [], audios: [] };
 
-    images.forEach((ref, i) => tagged.images.push({ ref, tag: tenImages ? `<Picture ${i + 1}>` : ["First image", "Last image"][i] || `<Picture ${i + 1}>` }));
+    images.forEach((ref, i) => tagged.images.push({ ref, tag: tenImages ? `<Image ${i + 1}>` : ["First image", "Last image"][i] || `<Image ${i + 1}>` }));
 
     let audioN = 0;
     videos.forEach((ref, i) => {
