@@ -7,6 +7,7 @@ downscaling, bundled image and mask outputs, and the native ComfyUI Mask Editor.
 
 | Display name | Node ID | Outputs | Source |
 | --- | --- | --- | --- |
+| LS Save Image | `LSSaveImage` | `images` | `images` input; optional browser download (default: off) |
 | LS Image reference manager (Local) | `LSImageReferenceManager` | `references`, `masks` | Local input |
 | LS Image reference manager (Upload) | `LSImageReferenceManagerUpload` | `references`, `masks` | Upload |
 | LS Image reference manager (Local Input, 10 Images + 10 Masks) | `LSImageReferenceManagerDirect` | `image_1`–`image_10`, `mask_1`–`mask_10` | Local input |
@@ -140,14 +141,7 @@ nine outputs. Click a slot to browse images already in the ComfyUI server's
 assign it to that exact slot. No upload is needed. Selecting an occupied slot
 replaces only that reference; the × button clears it without moving other images.
 
-## Development
-
-```bash
-pytest -q --confcutdir=tests
-node --check web/image_refpack.js
-```
-
-## Resolution selector
+## LS Resolution selector
 
 **LS Resolution Selector** (`LSResolutionSelector`, under **Image**) uses the
 native ComfyUI Resolution Selector for aspect ratio, megapixels and multiple.
@@ -162,3 +156,20 @@ The resulting width and height are displayed below the controls after execution.
 The node only calculates dimensions; it does not resize the supplied image.
 
 This node has its own LS ID and does not require ComfyUI-P-H3-Image-Tools.
+
+## LS Save Image
+
+**LS Save Image** (`LSSaveImage`) extends ComfyUI's **Save Image (Advanced)**,
+preserving its format, bit depth, color space, channels, metadata, preview and
+image output. The `download` toggle defaults to **off**. Enable it to download
+each saved file in the browser after execution, in addition to saving it in the
+server's output directory. Your browser may request permission for multiple
+downloads when saving a batch. Requires a ComfyUI version with Save Image
+(Advanced). Restart ComfyUI and refresh the browser after updating.
+
+## Development
+
+```bash
+pytest -q --confcutdir=tests
+node --check web/image_refpack.js
+```
